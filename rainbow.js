@@ -2,10 +2,10 @@
 
 //document constants
 const RESIZABLE = true;
+const CANVAS_PADDING = 5; //in Percent
 const RAINBOW_GAME_FRAME = "rainbow-game";
 const RAINBOW_IMAGE = "rainbow-wheel-img";
 const RAINBOW_CANVAS = "rainbow-canvas";
-const CANVAS_PADDING = 5; //in Percent
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -74,7 +74,7 @@ function isNumeric(n) {
 
 
 //Rainbow canvas constructor
-function Canvas(canvasElement, paddingPercent, imageID, frameID){
+function Canvas(canvasElement, paddingPercent, imageID, frameID, game){
     this.paddingPercent = paddingPercent;
     this.frame = document.getElementById(frameID);
     // this.size = Math.min( this.frame.clientWidth,  this.frame.clientHeight);
@@ -83,7 +83,10 @@ function Canvas(canvasElement, paddingPercent, imageID, frameID){
 
     this.canvasElement = document.getElementById(canvasElement);
     this.canvasContext = this.canvasElement.getContext("2d");
+
+
     this.image = document.getElementById(imageID);
+    this.game = game;
 }
 Canvas.prototype.resetSize = function(){
     // this.size = Math.min( this.frame.clientWidth,  this.frame.clientHeight);
@@ -96,6 +99,34 @@ Canvas.prototype.reDraw = function(){
     this.canvasElement.setAttribute("height",this.size);
     this.canvasElement.setAttribute("width",this.size);
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
+    // this.drawLetter("S");
+}
+Canvas.prototype.drawLetter = function(letter){
+    // var text = letter;
+
+    // this.canvasContext.fillStyle = "red";
+    // this.canvasContext.beginPath();
+    // var radius = 100; // for example
+    // this.canvasContext.arc(200, 200, radius, 0, Math.PI * 2);
+    // this.canvasContext.closePath();
+    // this.canvasContext.fill();
+    // this.canvasContext.fillStyle = "black"; // font color to write the text with
+    // var font = "bold " + radius +"px serif";
+    // this.canvasContext.font = font;
+    // // Move it down by half the text height and left by half the text width
+    // var width = this.canvasContext.measureText(text).width;
+    // var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
+    // this.canvasContext.fillText(text, 200 - (width/2) ,200 + (height/2));
+
+    // // To show where the exact center is:
+    // this.canvasContext.fillRect(200,200,5,5)
+}
+Canvas.prototype.getMousePos = function(event){
+    var rect = this.canvasElement.getBoundingClientRect();
+    return {
+        x: Math.round((event.clientX-rect.left)/(rect.right-rect.left)*this.size),
+        y: Math.round((event.clientY-rect.top)/(rect.bottom-rect.top)*this.size)
+    };
 }
 
 //MAIN
@@ -104,13 +135,18 @@ window.onload = function() {
     // var canvasSize = Math.min( gameFrame.clientWidth,  gameFrame.clientHeight);
 
     var game = new Game(RAINBOW, PRIME);
-    var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME);
+    var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME, game);
     canvas.reDraw();
     window.onresize = function(event) {
-
         if(RESIZABLE){
             canvas.reDraw();
         }
     };
+
+    canvas.canvasElement.addEventListener('click', function(event){
+        var mousePos = canvas.getMousePos(event);
+        var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+        console.log(message);
+    },false);
     console.log(game.isKeyValid(game.encryptKey("76543210")));
 };
