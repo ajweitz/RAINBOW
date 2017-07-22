@@ -6,6 +6,8 @@ const CANVAS_PADDING = 5; //in Percent
 const RAINBOW_GAME_FRAME = "rainbow-game";
 const RAINBOW_IMAGE = "rainbow-wheel-img";
 const RAINBOW_CANVAS = "rainbow-canvas";
+const CANVAS_FONT = "serif";
+const CANVAS_KEY_FONT_RATIO = 25; //less is bigger
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -34,16 +36,21 @@ Game.prototype.generate = function(decryptedKey){
             throw 'Error generate() paramater must be of type: "String"';
         }
         // Game.code = key;
-        var tempArray = decryptedKey.split("");
-        for(var i = 0; i< this.carouselMapping.length; i++){
-
-        }
+        this.key = decryptedKey;
+        var keyArr = decryptedKey.split("");
     } else {
         // argument not passed
+        var keyArr = shuffle(this.carouselMapping);
+        this.key = keyArr.join("");
     }
+        var tempArray = [];
+        for (var i = 0; i < keyArr.length; i++) {
+            tempArray[i] = this.carousel[keyArr[i]];
+        }
+        this.carousel = tempArray;
 };
-Game.prototype.encryptKey = function(key){
-    return ((parseInt(key) * this.prime) + this.prime).toString();
+Game.prototype.encryptKey = function(){
+    return ((parseInt(this.key) * this.prime) + this.prime).toString();
 };
 Game.prototype.decryptKey = function(key){
     var result = ((parseInt(key) - this.prime) / this.prime).toString();
@@ -60,21 +67,53 @@ Game.prototype.isKeyValid = function(key){
     if(this.encryptKey(decryptedKey) !== key || decryptedKey.length !== this.carouselMapping.length)
         return false;
     for (var i = 0; i < this.carouselMapping.length; i++) {
-    var occurences = (decryptedKey.match(new RegExp(this.carouselMapping[i],"g")) || []).length; // check how many of the mapped chars are in the decrypted key.
-    if(occurences != 1){
-        return false;
+        var occurences = (decryptedKey.match(new RegExp(this.carouselMapping[i],"g")) || []).length; // check how many of the mapped chars are in the decrypted key.
+        if(occurences != 1){
+            return false;
+        }
     }
+    return true;
 }
-return true;
+Game.prototype.isGameFinished = function(){
+    var carouselPointer = this.carousel.indexOf(null)+1;
+    for (var i = 0; i < RAINBOW.length; i++) {
+        if(carouselPointer === this.carousel.length){
+            carouselPointer = 0;
+        }
+        if ( RAINBOW[i] !== this.carousel[carouselPointer] ){
+            return false;
+        }
+        carouselPointer++;
+    }
+    return true;
 }
-
 function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
 
 
 //Rainbow canvas constructor
 function Canvas(canvasElement, paddingPercent, imageID, frameID, game){
+
     this.paddingPercent = paddingPercent;
     this.frame = document.getElementById(frameID);
     // this.size = Math.min( this.frame.clientWidth,  this.frame.clientHeight);
@@ -99,9 +138,23 @@ Canvas.prototype.reDraw = function(){
     this.canvasElement.setAttribute("height",this.size);
     this.canvasElement.setAttribute("width",this.size);
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
+
+    this.drawKey();
+    for (var i = 0; i < this.game.length; i++) {
+        // this.game.[i];
+    }
     // this.drawLetter("S");
 }
-Canvas.prototype.drawLetter = function(letter){
+Canvas.prototype.drawKey = function(){
+    var text = "#" + this.game.encryptKey();
+    var fontSize = this.size/CANVAS_KEY_FONT_RATIO;
+    var fontStyle = CANVAS_FONT;
+    var font = "bold " + fontSize +"px "+fontStyle;
+    this.canvasContext.fillStyle = "black"; // font color to write the text with
+    this.canvasContext.font = font;
+    this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
+}
+Canvas.prototype.drawLetter = function(letter, position){
     // var text = letter;
 
     // this.canvasContext.fillStyle = "red";
@@ -111,7 +164,8 @@ Canvas.prototype.drawLetter = function(letter){
     // this.canvasContext.closePath();
     // this.canvasContext.fill();
     // this.canvasContext.fillStyle = "black"; // font color to write the text with
-    // var font = "bold " + radius +"px serif";
+    // var fontStyle = CANVAS_FONT;
+    // var font = "bold " + radius +"px " + fontStyle;
     // this.canvasContext.font = font;
     // // Move it down by half the text height and left by half the text width
     // var width = this.canvasContext.measureText(text).width;
@@ -135,6 +189,7 @@ window.onload = function() {
     // var canvasSize = Math.min( gameFrame.clientWidth,  gameFrame.clientHeight);
 
     var game = new Game(RAINBOW, PRIME);
+    game.generate("56701234");
     var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME, game);
     canvas.reDraw();
     window.onresize = function(event) {
@@ -148,5 +203,7 @@ window.onload = function() {
         var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
         console.log(message);
     },false);
-    console.log(game.isKeyValid(game.encryptKey("76543210")));
+    console.log(game.isGameFinished());
+    console.log(game.carousel);
+    // console.log(game.isKeyValid(game.encryptKey("76543210")));
 };
