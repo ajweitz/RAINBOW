@@ -57,10 +57,11 @@ Game.prototype.generate = function(decryptedKey){
         this.carousel = tempArray;
 };
 Game.prototype.encryptKey = function(){
-    return ((parseInt(this.key) * this.prime) + this.prime).toString();
+    return convertBase(((parseInt(this.key) * this.prime) + this.prime).toString(), 10, 32);;
 };
 Game.prototype.decryptKey = function(key){
-    var result = ((parseInt(key) - this.prime) / this.prime).toString();
+    var baseTenKey = convertBase(key, 32, 10);
+    var result = ((parseInt(baseTenKey) - this.prime) / this.prime).toString();
     if (!result.includes("0"))
         result = "0" + result;
 
@@ -94,6 +95,32 @@ Game.prototype.isGameFinished = function(){
     }
     return true;
 }
+Game.prototype.playMove = function(index){
+    var plusOne = index+1;
+    if(plusOne == this.carousel.length){
+        plusOne = 0;
+    }
+    var minusOne = index-1;
+    if(minusOne == -1){
+        minusOne = this.carousel.length-1;
+    }
+    var oppositeCell = index + this.carousel.length/2;
+    if(oppositeCell > this.carousel.length){
+        oppositeCell = index - this.carousel.length/2;
+    }
+
+    if(carousel[plusOne] == null){
+        var emptyCellIndex = plusOne;
+    }
+    else {
+        var emptyCellIndex = minusOne;
+    }
+
+    this.carousel[emptyCellIndex] = this.carousel[index];
+    this.carousel[index] = this.carousel[oppositeCell];
+    this.carousel[oppositeCell] = null;
+}
+
 function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -116,7 +143,23 @@ function shuffle(array) {
   return array;
 }
 
-
+function convertBase(value, from_base, to_base) {
+  var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
+  var from_range = range.slice(0, from_base);
+  var to_range = range.slice(0, to_base);
+  
+  var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
+    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `'+digit+'` for base '+from_base+'.');
+    return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
+  }, 0);
+  
+  var new_value = '';
+  while (dec_value > 0) {
+    new_value = to_range[dec_value % to_base] + new_value;
+    dec_value = (dec_value - (dec_value % to_base)) / to_base;
+  }
+  return new_value || '0';
+}
 
 //Rainbow canvas constructor
 function Canvas(canvasElement, paddingPercent, imageID, frameID, game){
@@ -216,7 +259,9 @@ window.onload = function() {
     // var canvasSize = Math.min( gameFrame.clientWidth,  gameFrame.clientHeight);
 
     var game = new Game(RAINBOW, PRIME);
-    game.generate("56701234");
+    // game.generate("56701234");
+    game.generate();
+
     var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME, game);
     canvas.reDraw();
     window.onresize = function(event) {
