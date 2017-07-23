@@ -140,10 +140,11 @@ Canvas.prototype.reDraw = function(){
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
 
     this.drawKey();
-    for (var i = 0; i < this.game.length; i++) {
-        // this.game.[i];
+    for (var i = 0; i < this.game.carousel.length; i++) {
+        if(this.game.carousel[i] != null){
+            this.drawLetter(this.game.carousel[i],i);
+        }
     }
-    // this.drawLetter("S");
 }
 Canvas.prototype.drawKey = function(){
     var text = "#" + this.game.encryptKey();
@@ -155,25 +156,26 @@ Canvas.prototype.drawKey = function(){
     this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
 }
 Canvas.prototype.drawLetter = function(letter, position){
-    // var text = letter;
+    var text = letter;
 
-    // this.canvasContext.fillStyle = "red";
-    // this.canvasContext.beginPath();
-    // var radius = 100; // for example
-    // this.canvasContext.arc(200, 200, radius, 0, Math.PI * 2);
-    // this.canvasContext.closePath();
-    // this.canvasContext.fill();
-    // this.canvasContext.fillStyle = "black"; // font color to write the text with
-    // var fontStyle = CANVAS_FONT;
-    // var font = "bold " + radius +"px " + fontStyle;
-    // this.canvasContext.font = font;
-    // // Move it down by half the text height and left by half the text width
-    // var width = this.canvasContext.measureText(text).width;
-    // var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
-    // this.canvasContext.fillText(text, 200 - (width/2) ,200 + (height/2));
+    var pos = (position+1)*(this.size/12);
+    this.canvasContext.fillStyle = "orange";
+    this.canvasContext.beginPath();
+    var radius = this.size/20; // for example
+    this.canvasContext.arc(pos, pos, radius, 0, Math.PI * 2);
+    this.canvasContext.closePath();
+    this.canvasContext.fill();
+    this.canvasContext.fillStyle = "black"; // font color to write the text with
+    var fontStyle = CANVAS_FONT;
+    var font = "bold " + radius +"px " + fontStyle;
+    this.canvasContext.font = font;
+    // Move it down by half the text height and left by half the text width
+    var width = this.canvasContext.measureText(text).width;
+    var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
+    this.canvasContext.fillText(text, pos - (width/2) ,pos + (height/2));
 
-    // // To show where the exact center is:
-    // this.canvasContext.fillRect(200,200,5,5)
+    // To show where the exact center is:
+    // this.canvasContext.fillRect(pos,pos,5,5);
 }
 Canvas.prototype.getMousePos = function(event){
     var rect = this.canvasElement.getBoundingClientRect();
