@@ -1,13 +1,20 @@
 "use strict";
 
 //document constants
-const RESIZABLE = true;
-const CANVAS_PADDING = 5; //in Percent
 const RAINBOW_GAME_FRAME = "rainbow-game";
 const RAINBOW_IMAGE = "rainbow-wheel-img";
 const RAINBOW_CANVAS = "rainbow-canvas";
+const RESIZABLE = true;
+
+//Canvas constants
+const CANVAS_PADDING = 5; //in Percent
 const CANVAS_FONT = "serif";
 const CANVAS_KEY_FONT_RATIO = 25; //less is bigger
+//Canvas - letter constants
+const CANVAS_LETTER_PADDING = 8; //in Percent
+const CANVAS_LETTER_RADIUS = 20;
+const CANVAS_LETTER_BACKGROUND_COLOR = "orange";
+const CANVAS_LETTER_COLOR = "black";
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -156,26 +163,44 @@ Canvas.prototype.drawKey = function(){
     this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
 }
 Canvas.prototype.drawLetter = function(letter, position){
+    //Styling
     var text = letter;
+    var backgroundColor = CANVAS_LETTER_BACKGROUND_COLOR;
+    var textColor = CANVAS_LETTER_COLOR;
+    var letterRadius = this.size/CANVAS_LETTER_RADIUS; 
+    var bold = true;
 
-    var pos = (position+1)*(this.size/12);
-    this.canvasContext.fillStyle = "orange";
+    if(bold){
+        bold = "bold ";
+    }
+    else{
+        bold = "";
+    }
+
+    var pos = this.positionLetter(position);
+
+    this.canvasContext.fillStyle = backgroundColor;
     this.canvasContext.beginPath();
-    var radius = this.size/20; // for example
-    this.canvasContext.arc(pos, pos, radius, 0, Math.PI * 2);
+    this.canvasContext.arc(pos.x, pos.y, letterRadius, 0, Math.PI * 2);
     this.canvasContext.closePath();
     this.canvasContext.fill();
-    this.canvasContext.fillStyle = "black"; // font color to write the text with
+    this.canvasContext.fillStyle = textColor; // font color to write the text with
     var fontStyle = CANVAS_FONT;
-    var font = "bold " + radius +"px " + fontStyle;
+    var font = bold + letterRadius +"px " + fontStyle;
     this.canvasContext.font = font;
     // Move it down by half the text height and left by half the text width
     var width = this.canvasContext.measureText(text).width;
     var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
-    this.canvasContext.fillText(text, pos - (width/2) ,pos + (height/2));
+    this.canvasContext.fillText(text, pos.x - (width/2) ,pos.y + (height/2));
 
     // To show where the exact center is:
     // this.canvasContext.fillRect(pos,pos,5,5);
+}
+Canvas.prototype.positionLetter = function(index){
+    var letterPadding = (CANVAS_LETTER_PADDING / 100) * this.size;
+    var x = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.cos((2*Math.PI)/16*((index+1)*2-1));
+    var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
+    return {"x":x,"y":y};
 }
 Canvas.prototype.getMousePos = function(event){
     var rect = this.canvasElement.getBoundingClientRect();
