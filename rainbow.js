@@ -33,6 +33,7 @@ function Game(name,prime){
     this.carouselMapping = Array.apply(null, {length: this.carousel.length}).map(Number.call, Number); //generate [0,1,2,3,4,5,6,7] array (based on carousel length)
     this.prime = prime;
     this.key = "";
+    this.movesCounter = 0;
 }
 
 //Key must be a String
@@ -105,11 +106,11 @@ Game.prototype.playMove = function(index){
         minusOne = this.carousel.length-1;
     }
     var oppositeCell = index + this.carousel.length/2;
-    if(oppositeCell > this.carousel.length){
+    if(oppositeCell >= this.carousel.length){
         oppositeCell = index - this.carousel.length/2;
     }
 
-    if(carousel[plusOne] == null){
+    if(this.carousel[plusOne] == null){
         var emptyCellIndex = plusOne;
     }
     else {
@@ -119,46 +120,58 @@ Game.prototype.playMove = function(index){
     this.carousel[emptyCellIndex] = this.carousel[index];
     this.carousel[index] = this.carousel[oppositeCell];
     this.carousel[oppositeCell] = null;
+
+    this.movesCounter++;
+}
+
+Game.prototype.playable = function(){
+    var nullLocation = this.carousel.indexOf(null);
+    var left = nullLocation +1;
+    if( left == this.carousel.length){
+        left = 0;
+    }
+    var right = nullLocation -1;
+    if (right < 0){
+        right = this.carousel.length-1;
+    }
+    return {"left":left, "right":right};
 }
 
 function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
 function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
+    var currentIndex = array.length, temporaryValue, randomIndex;
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
 
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+    return array;
 }
 
 function convertBase(value, from_base, to_base) {
-  var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
-  var from_range = range.slice(0, from_base);
-  var to_range = range.slice(0, to_base);
-  
-  var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
+    var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
+    var from_range = range.slice(0, from_base);
+    var to_range = range.slice(0, to_base);
+
+    var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
     if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `'+digit+'` for base '+from_base+'.');
     return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
-  }, 0);
-  
-  var new_value = '';
-  while (dec_value > 0) {
-    new_value = to_range[dec_value % to_base] + new_value;
-    dec_value = (dec_value - (dec_value % to_base)) / to_base;
-  }
-  return new_value || '0';
+    }, 0);
+
+    var new_value = '';
+    while (dec_value > 0) {
+        new_value = to_range[dec_value % to_base] + new_value;
+        dec_value = (dec_value - (dec_value % to_base)) / to_base;
+    }
+    return new_value || '0';
 }
 
 //Rainbow canvas constructor
@@ -272,10 +285,23 @@ window.onload = function() {
 
     canvas.canvasElement.addEventListener('click', function(event){
         var mousePos = canvas.getMousePos(event);
-        var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
-        console.log(message);
+        var playableLetters = game.playable();
+        var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
+        var leftCoordinates = canvas.positionLetter(playableLetters.left);
+        var rightCoordinates = canvas.positionLetter(playableLetters.right);
+
+        var playedMove = false;
+        if(Math.abs(leftCoordinates.x - mousePos.x) <= letterRadius && Math.abs(leftCoordinates.y - mousePos.y) <= letterRadius ){
+            game.playMove(playableLetters.left );
+            playedMove = true;
+        } else if(Math.abs(rightCoordinates.x - mousePos.x) <= letterRadius && Math.abs(rightCoordinates.y - mousePos.y) <= letterRadius){
+            game.playMove(playableLetters.right );
+            playedMove = true;
+        }
+        if(playedMove){
+            canvas.reDraw();
+        }
     },false);
     console.log(game.isGameFinished());
     console.log(game.carousel);
-    // console.log(game.isKeyValid(game.encryptKey("76543210")));
 };
