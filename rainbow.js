@@ -119,11 +119,16 @@ Game.prototype.playMove = function(index){
         var emptyCellIndex = minusOne;
     }
 
+    var playedMovesLog = [];
+
+    playedMovesLog.push({"value": this.carousel[index],"from": index,"to": emptyCellIndex});
     this.carousel[emptyCellIndex] = this.carousel[index];
+    playedMovesLog.push({"value": this.carousel[oppositeCell],"from": oppositeCell,"to": index});
     this.carousel[index] = this.carousel[oppositeCell];
     this.carousel[oppositeCell] = null;
 
     this.movesCounter++;
+    return playedMovesLog;
 }
 
 Game.prototype.playable = function(){
@@ -142,6 +147,11 @@ Game.prototype.playable = function(){
 function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
+
+Array.prototype.contains = function(element){
+    return this.indexOf(element) > -1;
+};
+
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
     // While there remain elements to shuffle...
@@ -157,7 +167,9 @@ function shuffle(array) {
     }
     return array;
 }
-
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 function convertBase(value, from_base, to_base) {
     var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
     var from_range = range.slice(0, from_base);
@@ -190,7 +202,8 @@ function Canvas(canvasElement, paddingPercent, imageID, frameID, game){
 
 
     this.image = document.getElementById(imageID);
-    this.game = game;
+    this.game = game;  
+    this.movingLetters = [];
 }
 Canvas.prototype.resetSize = function(){
     // this.size = Math.min( this.frame.clientWidth,  this.frame.clientHeight);
@@ -208,8 +221,8 @@ Canvas.prototype.reDraw = function(){
 
     this.drawKey();
     for (var i = 0; i < this.game.carousel.length; i++) {
-        if(this.game.carousel[i] != null){
-            this.drawLetter(this.game.carousel[i],i);
+        if(this.game.carousel[i] != null && !this.movingLetters.contains(this.game.carousel[i])){
+            this.drawLetterInCorner(this.game.carousel[i],i);
         }
     }
 }
@@ -222,7 +235,12 @@ Canvas.prototype.drawKey = function(){
     this.canvasContext.font = font;
     this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
 }
-Canvas.prototype.drawLetter = function(letter, position){
+Canvas.prototype.drawLetterInCorner = function(letter, position){
+
+    var pos = this.positionLetter(position);
+    this.drawLetter(letter,pos.x,pos.y);
+}
+Canvas.prototype.drawLetter = function(letter, xPosition, yPosition){
     //Styling
     var text = letter;
     var backgroundColor = CANVAS_LETTER_BACKGROUND_COLOR;
@@ -237,11 +255,9 @@ Canvas.prototype.drawLetter = function(letter, position){
         bold = "";
     }
 
-    var pos = this.positionLetter(position);
-
     this.canvasContext.fillStyle = backgroundColor;
     this.canvasContext.beginPath();
-    this.canvasContext.arc(pos.x, pos.y, letterRadius, 0, Math.PI * 2);
+    this.canvasContext.arc(xPosition, yPosition, letterRadius, 0, Math.PI * 2);
     this.canvasContext.closePath();
     this.canvasContext.fill();
     this.canvasContext.fillStyle = textColor; // font color to write the text with
@@ -251,7 +267,7 @@ Canvas.prototype.drawLetter = function(letter, position){
     // Move it down by half the text height and left by half the text width
     var width = this.canvasContext.measureText(text).width;
     var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
-    this.canvasContext.fillText(text, pos.x - (width/2) ,pos.y + (height/2));
+    this.canvasContext.fillText(text, xPosition - (width/2) ,yPosition + (height/2));
 
     // To show where the exact center is:
     // this.canvasContext.fillRect(pos,pos,5,5);
@@ -262,7 +278,33 @@ Canvas.prototype.positionLetter = function(index){
     var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
     return {"x":x,"y":y};
 }
-Canvas.prototype.animateLettersMovement = function(playedIndex){
+Canvas.prototype.animateLetterMovement = async function(letter, startPosition, endPosition, milliseconds){
+    this.movingLetters.push(letter);
+    console.log(this.movingLetters);
+
+    var frameRate = 20; //in milliseconds
+    var frames = milliseconds / frameRate;
+    var startPos = this.positionLetter(startPosition);
+    var endPos = this.positionLetter(endPosition);
+
+    var xAxisMovementRate = (endPos.x - startPos.x )/frames;
+    var yAxisMovementRate = (endPos.y - startPos.y)/frames;
+    console.log("starting moving "+frames);
+    for (var i = 0; i < frames; i++) {
+        await sleep(frameRate);
+        startPos.x += xAxisMovementRate;
+        startPos.y += yAxisMovementRate;
+        // console.log(this.movingLetters);
+        this.reDraw();
+        this.drawLetter(letter,startPos.x,startPos.y);
+
+    }
+    for (var i=this.movingLetters.length-1; i>=0; i--) {
+        if (this.movingLetters[i] === letter) {
+            this.movingLetters.splice(i, 1);
+            break;       //<-- Uncomment  if only the first term has to be removed
+        }
+    }
 
 }
 Canvas.prototype.getMousePos = function(event){
@@ -297,16 +339,17 @@ window.onload = function() {
         var leftCoordinates = canvas.positionLetter(playableLetters.left);
         var rightCoordinates = canvas.positionLetter(playableLetters.right);
 
-        var playedMove = false;
+        var playedMoves = [];
         if(Math.abs(leftCoordinates.x - mousePos.x) <= letterRadius && Math.abs(leftCoordinates.y - mousePos.y) <= letterRadius ){
-            game.playMove(playableLetters.left );
-            playedMove = true;
+            playedMoves = game.playMove( playableLetters.left );
         } else if(Math.abs(rightCoordinates.x - mousePos.x) <= letterRadius && Math.abs(rightCoordinates.y - mousePos.y) <= letterRadius){
-            game.playMove(playableLetters.right );
-            playedMove = true;
+            playedMoves = game.playMove( playableLetters.right );
         }
-        if(playedMove){
-            canvas.reDraw();
+        if(playedMoves.length > 0){
+            for (var i = 0; i < playedMoves.length; i++) {
+                canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, 1000);
+            }
+
         }
     },false);
     console.log(game.isGameFinished());
