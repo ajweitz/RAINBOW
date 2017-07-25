@@ -7,13 +7,15 @@ const RAINBOW_CANVAS = "rainbow-canvas";
 const RESIZABLE = true;
 
 //Canvas constants
-const CANVAS_PADDING = 5; //in Percent
-const CANVAS_FONT = "serif";
-const CANVAS_KEY_FONT_RATIO = 25; //less is bigger
+const CANVAS_BACKGROUND_COLOR="black";
+const CANVAS_PADDING = 0; //in Percent
+const CANVAS_FONT = "arial";
+const CANVAS_KEY_FONT_RATIO = 30; //less is bigger
+const CANVAS_KEY_FONT_COLOR ="white";
 //Canvas - letter constants
-const CANVAS_LETTER_PADDING = 8; //in Percent
-const CANVAS_LETTER_RADIUS = 20;
-const CANVAS_LETTER_BACKGROUND_COLOR = "orange";
+const CANVAS_LETTER_PADDING = 14; //in Percent
+const CANVAS_LETTER_RADIUS = 16;
+const CANVAS_LETTER_BACKGROUND_COLOR = "gold";
 const CANVAS_LETTER_COLOR = "black";
 
 //game constants
@@ -200,6 +202,8 @@ Canvas.prototype.reDraw = function(){
     this.resetSize();
     this.canvasElement.setAttribute("height",this.size);
     this.canvasElement.setAttribute("width",this.size);
+    this.canvasContext.fillStyle = CANVAS_BACKGROUND_COLOR;
+    this.canvasContext.fillRect(0, 0, this.size, this.size);
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
 
     this.drawKey();
@@ -214,7 +218,7 @@ Canvas.prototype.drawKey = function(){
     var fontSize = this.size/CANVAS_KEY_FONT_RATIO;
     var fontStyle = CANVAS_FONT;
     var font = "bold " + fontSize +"px "+fontStyle;
-    this.canvasContext.fillStyle = "black"; // font color to write the text with
+    this.canvasContext.fillStyle = CANVAS_KEY_FONT_COLOR; // font color to write the text with
     this.canvasContext.font = font;
     this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
 }
@@ -257,6 +261,9 @@ Canvas.prototype.positionLetter = function(index){
     var x = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.cos((2*Math.PI)/16*((index+1)*2-1));
     var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
     return {"x":x,"y":y};
+}
+Canvas.prototype.animateLettersMovement = function(playedIndex){
+
 }
 Canvas.prototype.getMousePos = function(event){
     var rect = this.canvasElement.getBoundingClientRect();
@@ -305,3 +312,4 @@ window.onload = function() {
     console.log(game.isGameFinished());
     console.log(game.carousel);
 };
+
