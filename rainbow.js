@@ -12,11 +12,14 @@ const CANVAS_PADDING = 0; //in Percent
 const CANVAS_FONT = "arial";
 const CANVAS_KEY_FONT_RATIO = 30; //less is bigger
 const CANVAS_KEY_FONT_COLOR ="white";
+const CANVAS_ANIMATION_SPEED = 500 //in milliseconds
+const CANVAS_FRAME_RATE = 20;
 //Canvas - letter constants
 const CANVAS_LETTER_PADDING = 14; //in Percent
 const CANVAS_LETTER_RADIUS = 16;
 const CANVAS_LETTER_BACKGROUND_COLOR = "gold";
 const CANVAS_LETTER_COLOR = "black";
+
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -252,7 +255,7 @@ Canvas.prototype.positionLetter = function(index){
 }
 Canvas.prototype.animateLetterMovement = async function(letter, startPosition, endPosition, milliseconds){
 
-    var frameRate = 20; //in milliseconds
+    var frameRate = CANVAS_FRAME_RATE; //in milliseconds
     var frames = milliseconds / frameRate;
     var startPos = this.positionLetter(startPosition);
     var endPos = this.positionLetter(endPosition);
@@ -363,12 +366,11 @@ window.onload = function() {
         }
         if(playedMoves.length > 0){
             for (var i = 0; i < playedMoves.length; i++) {
-                canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, 2000);
+                canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
             }
 
         }
     },false);
-    console.log(game.isGameFinished());
-    console.log(game.carousel);
+
 };
 
