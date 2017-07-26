@@ -28,6 +28,10 @@ if(RAINBOW.length != RAINBOW_LENGTH){
 const PRIME = 31;
 
 
+////////////////////
+///////GAME////////
+///////////////////
+
 //Game Constructor
 function Game(name,prime){
     this.carousel = name.split("");
@@ -144,50 +148,10 @@ Game.prototype.playable = function(){
     return {"left":left, "right":right};
 }
 
-function isNumeric(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}
 
-Array.prototype.contains = function(element){
-    return this.indexOf(element) > -1;
-};
-
-function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-    return array;
-}
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-function convertBase(value, from_base, to_base) {
-    var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
-    var from_range = range.slice(0, from_base);
-    var to_range = range.slice(0, to_base);
-
-    var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
-    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `'+digit+'` for base '+from_base+'.');
-    return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
-    }, 0);
-
-    var new_value = '';
-    while (dec_value > 0) {
-        new_value = to_range[dec_value % to_base] + new_value;
-        dec_value = (dec_value - (dec_value % to_base)) / to_base;
-    }
-    return new_value || '0';
-}
-
+/////////////////////
+///////CANVAS////////
+/////////////////////
 //Rainbow canvas constructor
 function Canvas(canvasElement, paddingPercent, imageID, frameID, game){
 
@@ -203,26 +167,34 @@ function Canvas(canvasElement, paddingPercent, imageID, frameID, game){
 
     this.image = document.getElementById(imageID);
     this.game = game;  
-    this.movingLetters = [];
+
+    this.movingLetters = {};
+    for (var i = 0; i < this.game.carousel.length; i++) {
+        this.movingLetters[this.game.carousel[i]] = null;
+    }
 }
 Canvas.prototype.resetSize = function(){
     // this.size = Math.min( this.frame.clientWidth,  this.frame.clientHeight);
     this.size = this.frame.clientWidth;
     this.padding = (this.paddingPercent / 100) * this.size;
+    this.canvasElement.setAttribute("height",this.size);
+    this.canvasElement.setAttribute("width",this.size);
 
 }
 Canvas.prototype.reDraw = function(){
-    this.resetSize();
-    this.canvasElement.setAttribute("height",this.size);
-    this.canvasElement.setAttribute("width",this.size);
     this.canvasContext.fillStyle = CANVAS_BACKGROUND_COLOR;
     this.canvasContext.fillRect(0, 0, this.size, this.size);
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
 
     this.drawKey();
     for (var i = 0; i < this.game.carousel.length; i++) {
-        if(this.game.carousel[i] != null && !this.movingLetters.contains(this.game.carousel[i])){
-            this.drawLetterInCorner(this.game.carousel[i],i);
+        if(this.game.carousel[i] != null){
+            if(this.movingLetters[this.game.carousel[i]] == null){
+                this.drawLetterInCorner(this.game.carousel[i],i);
+            }else{
+                var position = this.movingLetters[this.game.carousel[i]];
+                this.drawLetter(this.game.carousel[i],position.x,position.y);
+            }
         }
     }
 }
@@ -279,14 +251,13 @@ Canvas.prototype.positionLetter = function(index){
     return {"x":x,"y":y};
 }
 Canvas.prototype.animateLetterMovement = async function(letter, startPosition, endPosition, milliseconds){
-    this.movingLetters.push(letter);
-    console.log(this.movingLetters);
 
     var frameRate = 20; //in milliseconds
     var frames = milliseconds / frameRate;
     var startPos = this.positionLetter(startPosition);
     var endPos = this.positionLetter(endPosition);
-
+    this.movingLetters[letter] = {"x":startPos.x , "y":startPos.y };
+    console.log(this.movingLetters);
     var xAxisMovementRate = (endPos.x - startPos.x )/frames;
     var yAxisMovementRate = (endPos.y - startPos.y)/frames;
     console.log("starting moving "+frames);
@@ -295,16 +266,10 @@ Canvas.prototype.animateLetterMovement = async function(letter, startPosition, e
         startPos.x += xAxisMovementRate;
         startPos.y += yAxisMovementRate;
         // console.log(this.movingLetters);
+        this.movingLetters[letter] = {"x":startPos.x , "y":startPos.y };
         this.reDraw();
-        this.drawLetter(letter,startPos.x,startPos.y);
-
     }
-    for (var i=this.movingLetters.length-1; i>=0; i--) {
-        if (this.movingLetters[i] === letter) {
-            this.movingLetters.splice(i, 1);
-            break;       //<-- Uncomment  if only the first term has to be removed
-        }
-    }
+    this.movingLetters[letter] = null;
 
 }
 Canvas.prototype.getMousePos = function(event){
@@ -315,7 +280,56 @@ Canvas.prototype.getMousePos = function(event){
     };
 }
 
-//MAIN
+//////////////////////////
+////UTILITY FUNCTIONS////
+////////////////////////
+function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+Array.prototype.contains = function(element){
+    return this.indexOf(element) > -1;
+};
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+    return array;
+}
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+function convertBase(value, from_base, to_base) {
+    var range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
+    var from_range = range.slice(0, from_base);
+    var to_range = range.slice(0, to_base);
+
+    var dec_value = value.split('').reverse().reduce(function (carry, digit, index) {
+    if (from_range.indexOf(digit) === -1) throw new Error('Invalid digit `'+digit+'` for base '+from_base+'.');
+    return carry += from_range.indexOf(digit) * (Math.pow(from_base, index));
+    }, 0);
+
+    var new_value = '';
+    while (dec_value > 0) {
+        new_value = to_range[dec_value % to_base] + new_value;
+        dec_value = (dec_value - (dec_value % to_base)) / to_base;
+    }
+    return new_value || '0';
+}
+
+/////////////////////
+////////MAIN/////////
+/////////////////////
 window.onload = function() {
     var gameFrame = document.getElementById(RAINBOW_GAME_FRAME);
     // var canvasSize = Math.min( gameFrame.clientWidth,  gameFrame.clientHeight);
@@ -325,9 +339,11 @@ window.onload = function() {
     game.generate();
 
     var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME, game);
+    canvas.resetSize();
     canvas.reDraw();
     window.onresize = function(event) {
         if(RESIZABLE){
+            canvas.resetSize();
             canvas.reDraw();
         }
     };
@@ -347,7 +363,7 @@ window.onload = function() {
         }
         if(playedMoves.length > 0){
             for (var i = 0; i < playedMoves.length; i++) {
-                canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, 1000);
+                canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, 2000);
             }
 
         }
