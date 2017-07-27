@@ -31,7 +31,7 @@ const RAINBOW_LENGTH = 7;
 if(RAINBOW.length != RAINBOW_LENGTH){
     throw 'Error RAINBOW not well defined';
 }
-const DIFFICULTIES = ["Middleweight","Light Heavyweight","Heavyweight"];
+const DIFFICULTIES = ["LW","MW","HW"];
 const EASY = 0;
 const MEDIUM =1;
 const HARD =2;
@@ -211,7 +211,7 @@ Canvas.prototype.drawKey = function(){
     this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
 }
 Canvas.prototype.drawMoves = function(){
-    var text = this.game.movesCounter;
+    var text = DIFFICULTIES[this.game.difficulty]+" "+this.game.movesCounter;
     var fontSize = this.size/CANVAS_MOVES_FONT_RATIO;
     var fontStyle = CANVAS_FONT;
     var font = "bold " + fontSize +"px "+fontStyle;
@@ -403,7 +403,6 @@ window.onload = function() {
             canvas.reDraw();
             for (var i = 0; i < playableLetters.length; i++) {
                 var letterCoordinates = canvas.positionLetter(playableLetters[i]);
-                // canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_LETTER_BACKGROUND_COLOR);
                 if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
                     canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_SELECTED_LETTER_BACKGROUND_COLOR);
                 }
