@@ -30,6 +30,11 @@ const RAINBOW_LENGTH = 7;
 if(RAINBOW.length != RAINBOW_LENGTH){
     throw 'Error RAINBOW not well defined';
 }
+const DIFFICULTIES = ["Middleweight","Light Heavyweight","Heavyweight"];
+const EASY = 0;
+const MEDIUM =1;
+const HARD =2;
+const STARTING_DIFFICULTY = EASY;
 
 const PRIME = 31;
 
@@ -39,13 +44,14 @@ const PRIME = 31;
 ///////////////////
 
 //Game Constructor
-function Game(name,prime){
+function Game(name,prime,difficulty){
     this.carousel = name.split("");
     this.carousel.push(null); //one of the nodes should be empty
     this.carouselMapping = Array.apply(null, {length: this.carousel.length}).map(Number.call, Number); //generate [0,1,2,3,4,5,6,7] array (based on carousel length)
     this.prime = prime;
     this.key = "";
     this.movesCounter = 0;
+    this.difficulty = difficulty;
 }
 
 //Key must be a String
@@ -109,26 +115,12 @@ Game.prototype.isGameFinished = function(){
     return true;
 }
 Game.prototype.playMove = function(index){
-    var plusOne = index+1;
-    if(plusOne == this.carousel.length){
-        plusOne = 0;
-    }
-    var minusOne = index-1;
-    if(minusOne == -1){
-        minusOne = this.carousel.length-1;
-    }
     var oppositeCell = index + this.carousel.length/2;
     if(oppositeCell >= this.carousel.length){
         oppositeCell = index - this.carousel.length/2;
     }
 
-    if(this.carousel[plusOne] == null){
-        var emptyCellIndex = plusOne;
-    }
-    else {
-        var emptyCellIndex = minusOne;
-    }
-
+    var emptyCellIndex = this.carousel.indexOf(null);
     var playedMovesLog = [];
 
     playedMovesLog.push({"value": this.carousel[index],"from": index,"to": emptyCellIndex});
@@ -142,16 +134,22 @@ Game.prototype.playMove = function(index){
 }
 
 Game.prototype.playable = function(){
+    if(this.difficulty == EASY){
+        var tempArray = [];
+        for (var i = 0; i < this.carousel.length; i++) {
+            if(this.carousel[i] != null){
+                tempArray.push(i);
+            }
+        }
+        return tempArray;
+    }
     var nullLocation = this.carousel.indexOf(null);
-    var left = nullLocation +1;
-    if( left == this.carousel.length){
-        left = 0;
+    var left = leftIndex(this.carousel,nullLocation);
+    var right = rightIndex(this.carousel,nullLocation);
+    if(this.difficulty == HARD){
+        return [left,right];
     }
-    var right = nullLocation -1;
-    if (right < 0){
-        right = this.carousel.length-1;
-    }
-    return {"left":left, "right":right};
+    return [left,right,rightIndex(this.carousel,right),leftIndex(this.carousel,left)];
 }
 
 
@@ -273,10 +271,8 @@ Canvas.prototype.animateLetterMovement = async function(letter, startPosition, e
     var startPos = this.positionLetter(startPosition);
     var endPos = this.positionLetter(endPosition);
     this.movingLetters[letter] = {"x":startPos.x , "y":startPos.y };
-    console.log(this.movingLetters);
     var xAxisMovementRate = (endPos.x - startPos.x )/frames;
     var yAxisMovementRate = (endPos.y - startPos.y)/frames;
-    console.log("starting moving "+frames);
     for (var i = 0; i < frames; i++) {
         await sleep(frameRate);
         startPos.x += xAxisMovementRate;
@@ -302,7 +298,20 @@ Canvas.prototype.getMousePos = function(event){
 function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
-
+function rightIndex(array, i){
+    var index = i+1;
+    if(index == array.length){
+        index = 0;
+    }
+    return index;
+}
+function leftIndex(array, i){
+    var index = i-1;
+    if(index < 0){
+        index = array.length-1;
+    }
+    return index;
+}
 Array.prototype.contains = function(element){
     return this.indexOf(element) > -1;
 };
@@ -350,7 +359,7 @@ window.onload = function() {
     var gameFrame = document.getElementById(RAINBOW_GAME_FRAME);
     // var canvasSize = Math.min( gameFrame.clientWidth,  gameFrame.clientHeight);
 
-    var game = new Game(RAINBOW, PRIME);
+    var game = new Game(RAINBOW, PRIME, STARTING_DIFFICULTY);
     // game.generate("56701234");
     game.generate();
 
@@ -366,22 +375,21 @@ window.onload = function() {
 
     canvas.canvasElement.addEventListener('click', function(event){
         var mousePos = canvas.getMousePos(event);
-        var playableLetters = game.playable();
         var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
-        var leftCoordinates = canvas.positionLetter(playableLetters.left);
-        var rightCoordinates = canvas.positionLetter(playableLetters.right);
-
+        var playableLetters = game.playable();
         var playedMoves = [];
-        if(Math.abs(leftCoordinates.x - mousePos.x) <= letterRadius && Math.abs(leftCoordinates.y - mousePos.y) <= letterRadius ){
-            playedMoves = game.playMove( playableLetters.left );
-        } else if(Math.abs(rightCoordinates.x - mousePos.x) <= letterRadius && Math.abs(rightCoordinates.y - mousePos.y) <= letterRadius){
-            playedMoves = game.playMove( playableLetters.right );
+
+        for (var i = 0; i < playableLetters.length; i++) {
+            var letterCoordinates = canvas.positionLetter(playableLetters[i]);
+            if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
+                playedMoves = game.playMove( playableLetters[i] );
+            }
         }
+
         if(playedMoves.length > 0){
             for (var i = 0; i < playedMoves.length; i++) {
                 canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
             }
-
         }
     },false);
 
