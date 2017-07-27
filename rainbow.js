@@ -221,7 +221,7 @@ Canvas.prototype.drawMoves = function(){
     var font = "bold " + fontSize +"px "+fontStyle;
     this.canvasContext.fillStyle = CANVAS_MOVES_FONT_COLOR; // font color to write the text with
     this.canvasContext.font = font;
-    this.canvasContext.fillText(text, this.size-(this.size - (this.size *(10/100)))/CANVAS_MOVES_FONT_RATIO ,this.size/CANVAS_MOVES_FONT_RATIO);
+    this.canvasContext.fillText(text, this.size-fontSize-fontSize/2*text.toString().length ,this.size/CANVAS_MOVES_FONT_RATIO);
 }
 Canvas.prototype.drawLetterInCorner = function(letter, position){
 
