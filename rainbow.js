@@ -400,9 +400,10 @@ window.onload = function() {
             var mousePos = canvas.getMousePos(event);
             var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
             var playableLetters = game.playable();
+            canvas.reDraw();
             for (var i = 0; i < playableLetters.length; i++) {
                 var letterCoordinates = canvas.positionLetter(playableLetters[i]);
-                canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_LETTER_BACKGROUND_COLOR);
+                // canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_LETTER_BACKGROUND_COLOR);
                 if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
                     canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_SELECTED_LETTER_BACKGROUND_COLOR);
                 }
