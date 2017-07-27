@@ -10,8 +10,6 @@ const RESIZABLE = true;
 const CANVAS_BACKGROUND_COLOR="black";
 const CANVAS_PADDING = 0; //in Percent
 const CANVAS_FONT = "arial";
-const CANVAS_KEY_FONT_RATIO = 30; //less is bigger
-const CANVAS_KEY_FONT_COLOR ="white";
 const CANVAS_ANIMATION_SPEED = 500 //in milliseconds
 const CANVAS_FRAME_RATE = 20;
 //Canvas - letter constants
@@ -19,7 +17,12 @@ const CANVAS_LETTER_PADDING = 14; //in Percent
 const CANVAS_LETTER_RADIUS = 16;
 const CANVAS_LETTER_BACKGROUND_COLOR = "gold";
 const CANVAS_LETTER_COLOR = "black";
-
+//Canvas - key constants
+const CANVAS_KEY_FONT_RATIO = 30; //less is bigger
+const CANVAS_KEY_FONT_COLOR ="white";
+//Canvas - moves constants
+const CANVAS_MOVES_FONT_COLOR = "red";
+const CANVAS_MOVES_FONT_RATIO = 20;
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -190,6 +193,7 @@ Canvas.prototype.reDraw = function(){
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
 
     this.drawKey();
+    this.drawMoves();
     for (var i = 0; i < this.game.carousel.length; i++) {
         if(this.game.carousel[i] != null){
             if(this.movingLetters[this.game.carousel[i]] == null){
@@ -209,6 +213,15 @@ Canvas.prototype.drawKey = function(){
     this.canvasContext.fillStyle = CANVAS_KEY_FONT_COLOR; // font color to write the text with
     this.canvasContext.font = font;
     this.canvasContext.fillText(text, (this.size - (this.size *(30/100)))/CANVAS_KEY_FONT_RATIO ,this.size/CANVAS_KEY_FONT_RATIO);
+}
+Canvas.prototype.drawMoves = function(){
+    var text = this.game.movesCounter;
+    var fontSize = this.size/CANVAS_MOVES_FONT_RATIO;
+    var fontStyle = CANVAS_FONT;
+    var font = "bold " + fontSize +"px "+fontStyle;
+    this.canvasContext.fillStyle = CANVAS_MOVES_FONT_COLOR; // font color to write the text with
+    this.canvasContext.font = font;
+    this.canvasContext.fillText(text, this.size-(this.size - (this.size *(10/100)))/CANVAS_MOVES_FONT_RATIO ,this.size/CANVAS_MOVES_FONT_RATIO);
 }
 Canvas.prototype.drawLetterInCorner = function(letter, position){
 
