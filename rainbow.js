@@ -31,11 +31,12 @@ const RAINBOW_LENGTH = 7;
 if(RAINBOW.length != RAINBOW_LENGTH){
     throw 'Error RAINBOW not well defined';
 }
-const DIFFICULTIES = ["LW","MW","HW"];
-const EASY = 0;
-const MEDIUM =1;
-const HARD =2;
-const STARTING_DIFFICULTY = EASY;
+const DIFFICULTIES = ["LW","WW","MW","HW"];
+const VERY_EASY = 0;
+const EASY = 1;
+const MEDIUM =2;
+const HARD =3;
+const STARTING_DIFFICULTY = VERY_EASY;
 
 const PRIME = 31;
 
@@ -116,11 +117,16 @@ Game.prototype.isGameFinished = function(){
     return true;
 }
 Game.prototype.playMove = function(index){
+    this.movesCounter++;
     var oppositeCell = index + this.carousel.length/2;
     if(oppositeCell >= this.carousel.length){
         oppositeCell = index - this.carousel.length/2;
     }
-
+    if(this.carousel[oppositeCell] === null){
+        this.carousel[oppositeCell] = this.carousel[index];
+        this.carousel[index] = null;
+        return [{"value": this.carousel[oppositeCell],"from": index,"to": oppositeCell}]
+    }
     var emptyCellIndex = this.carousel.indexOf(null);
     var playedMovesLog = [];
 
@@ -130,20 +136,28 @@ Game.prototype.playMove = function(index){
     this.carousel[index] = this.carousel[oppositeCell];
     this.carousel[oppositeCell] = null;
 
-    this.movesCounter++;
     return playedMovesLog;
 }
 
 Game.prototype.playable = function(){
+    if(this.difficulty === VERY_EASY){
+        var tempArray = [];
+        for (var i = 0; i < this.carousel.length; i++) {
+            if(this.carousel[i] != null){
+                tempArray.push(i);
+            }
+        }
+        return tempArray;
+    }
     var nullLocation = this.carousel.indexOf(null);
     var left = leftIndex(this.carousel,nullLocation);
     var right = rightIndex(this.carousel,nullLocation);
-    if(this.difficulty == HARD){
+    if(this.difficulty === HARD){
         return [left,right];
     }
     var doubleLeft = leftIndex(this.carousel,left);
     var doubleRight = rightIndex(this.carousel,right);
-    if(this.difficulty == MEDIUM){
+    if(this.difficulty === MEDIUM){
         return [left,right,doubleLeft,doubleRight];
     }
     return [left,right,doubleLeft,doubleRight,rightIndex(this.carousel,doubleRight),leftIndex(this.carousel,doubleLeft)];
@@ -373,7 +387,7 @@ window.onload = function() {
         }
     };
 
-
+    //Click Listener
     canvas.canvasElement.addEventListener('click', function(event){
         var mousePos = canvas.getMousePos(event);
         var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
@@ -394,7 +408,7 @@ window.onload = function() {
             }
         }
     },false);
-
+    //Mouse Movement Listener
     canvas.canvasElement.addEventListener('mousemove', function(event) {
         if(!canvas.animationInAction){
             var mousePos = canvas.getMousePos(event);
