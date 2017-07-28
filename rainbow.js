@@ -16,7 +16,9 @@ const CANVAS_FRAME_RATE = 20;
 const CANVAS_LETTER_PADDING = 14; //in Percent
 const CANVAS_LETTER_RADIUS = 16;
 const CANVAS_LETTER_BACKGROUND_COLOR = "gold";
+const CANVAS_PLAYABLE_LETTER_RADIUS_RATION = 1.1;
 const CANVAS_SELECTED_LETTER_BACKGROUND_COLOR = "#bff99f";
+const CANVAS_PLAYABLE_LETTER_BACKGROUND_COLOR = "red";
 const CANVAS_LETTER_COLOR = "black";
 //Canvas - key constants
 const CANVAS_KEY_FONT_RATIO = 30; //less is bigger
@@ -36,7 +38,7 @@ const VERY_EASY = 0;
 const EASY = 1;
 const MEDIUM =2;
 const HARD =3;
-const STARTING_DIFFICULTY = VERY_EASY;
+const STARTING_DIFFICULTY = HARD;
 
 const PRIME = 31;
 
@@ -160,6 +162,7 @@ Game.prototype.playable = function(){
     if(this.difficulty === MEDIUM){
         return [left,right,doubleLeft,doubleRight];
     }
+    // in case it's EASY
     return [left,right,doubleLeft,doubleRight,rightIndex(this.carousel,doubleRight),leftIndex(this.carousel,doubleLeft)];
 }
 
@@ -207,10 +210,14 @@ Canvas.prototype.reDraw = function(){
     for (var i = 0; i < this.game.carousel.length; i++) {
         if(this.game.carousel[i] != null){
             if(this.movingLetters[this.game.carousel[i]] == null){
-                this.drawLetterInCorner(this.game.carousel[i],i,CANVAS_LETTER_BACKGROUND_COLOR);
+                var playable = false;
+                if(this.game.playable().includes(i)){
+                    playable = true;
+                }
+                this.drawLetterInCorner(this.game.carousel[i],i,CANVAS_LETTER_BACKGROUND_COLOR,playable);
             }else{
                 var position = this.movingLetters[this.game.carousel[i]];
-                this.drawLetter(this.game.carousel[i],position.x,position.y,CANVAS_LETTER_BACKGROUND_COLOR);
+                this.drawLetter(this.game.carousel[i],position.x,position.y,CANVAS_LETTER_BACKGROUND_COLOR,false);
             }
         }
     }
@@ -233,12 +240,12 @@ Canvas.prototype.drawMoves = function(){
     this.canvasContext.font = font;
     this.canvasContext.fillText(text, this.size-fontSize-fontSize/2*text.toString().length ,this.size/CANVAS_MOVES_FONT_RATIO);
 }
-Canvas.prototype.drawLetterInCorner = function(letter, position,backgroundColor){
+Canvas.prototype.drawLetterInCorner = function(letter, position,backgroundColor,playable){
 
     var pos = this.positionLetter(position);
-    this.drawLetter(letter,pos.x,pos.y,backgroundColor);
+    this.drawLetter(letter,pos.x,pos.y,backgroundColor,playable);
 }
-Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundColor){
+Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundColor, playable){
     //Styling
     var text = letter;
     // var backgroundColor = CANVAS_LETTER_BACKGROUND_COLOR;
@@ -253,6 +260,13 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
         bold = "";
     }
 
+    if(playable){
+        this.canvasContext.fillStyle = CANVAS_PLAYABLE_LETTER_BACKGROUND_COLOR;
+        this.canvasContext.beginPath();
+        this.canvasContext.arc(xPosition, yPosition, letterRadius*CANVAS_PLAYABLE_LETTER_RADIUS_RATION, 0, Math.PI * 2);
+        this.canvasContext.closePath();
+        this.canvasContext.fill();
+    }
     this.canvasContext.fillStyle = backgroundColor;
     this.canvasContext.beginPath();
     this.canvasContext.arc(xPosition, yPosition, letterRadius, 0, Math.PI * 2);
@@ -294,8 +308,10 @@ Canvas.prototype.animateLetterMovement = async function(letter, startPosition, e
         this.movingLetters[letter] = {"x":startPos.x , "y":startPos.y };
         this.reDraw();
     }
+    
     this.animationInAction = false;
     this.movingLetters[letter] = null;
+    this.reDraw();
 
 }
 Canvas.prototype.getMousePos = function(event){
