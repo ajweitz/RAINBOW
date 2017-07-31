@@ -3,13 +3,13 @@
 	  <span aria-hidden="true">&times;</span>
 	</button>
   <form class="login-form">
-    #<input type="text" placeholder="Enter a level key if you have one"/>
+    <input class="key-input" type="text" placeholder="Enter a level key if you have one"/>
     <br>
     	<div class="difficulties">
-	      <label><input type="radio" name="difficulty" value="0" checked> <span>LW</span></label>
-			  <label><input type="radio" name="difficulty" value="1"> <span>WW</span></label>
+	      <label class="left-difficulty"><input  type="radio" name="difficulty" value="0"> <span>LW</span></label>
+			  <label><input type="radio" name="difficulty" value="1" checked> <span>WW</span></label>
 			  <label><input type="radio" name="difficulty" value="2"> <span>MW</span></label>
-			  <label><input type="radio" name="difficulty" value="3"> <span>HW</span></label>
+			  <label class="right-difficulty" ><input type="radio" name="difficulty" value="3"> <span>HW</span></label>
 			</div>
     <button class="new-game">New Game</button>
    </form>
@@ -27,36 +27,84 @@
 		margin: 0 auto;
 
 	}
-	#rainbow-new-game-dialog input{
+	#rainbow-new-game-dialog .key-input{
+    font-size: 2vw;
+    position: relative;
+    border-radius: 4vw;
+		padding-left: 2vw;
+		top: 2vw;
+		border: none;
 		background-color: #f2f2f2;
 		width: 80%;
 		margin: 0 auto;
+		height: 4vw;
+	}
+	#rainbow-new-game-dialog input.key-input:hover{
+		background-color: #DFDFDF;
+	}
+	#rainbow-new-game-dialog input.key-input:focus{
+    outline: none;
 	}
 	#rainbow-new-game-dialog .new-game{
+		top: 8vw;
+		position: relative;
+    background-color:#EFEFEF;
+
+		border: none;
+    font-size: 2vw;
+    border-radius: 4vw;
+		height: 6vw;
 		width: 40%;
 		margin: 0 auto;
 	}
+	#rainbow-new-game-dialog button.new-game:hover{
+		background-color: #DFDFDF;
+	}
+	#rainbow-new-game-dialog button.close:hover{
+		background-color: #DFDFDF;
+	}
 	#rainbow-new-game-dialog .close{
+    background-color:#EFEFEF;
+
 		position: relative;
-		left: 50%;
+		width: 3vw;
+		height: 3vw;
+		font-size: 2vw;
+		top: 0vw;
+		left: 23.5vw;
 		border: none;
 	}
 
 	#rainbow-new-game-dialog .difficulties {
-    margin:4px;
-   
-    float:left;
+    /*margin:4px;*/
+		top: 5vw;
+
+		position: relative;
+    left: 8%;
+		margin: 0 auto;
+    /*float:left;*/
 	}
 
-	#rainbow-new-game-dialog .difficulties label {
+	#rainbow-new-game-dialog .difficulties label.right-difficulty{
+    border-radius: 0 4vw 4vw 0;
+	       
+	}
+		#rainbow-new-game-dialog .difficulties label.left-difficulty{
+    border-radius: 4vw 0 0 4vw;
+	       
+	}
+		#rainbow-new-game-dialog .difficulties label {
     float:left;
     width:10vw;
-    margin:4px;
+    /*margin:4px;*/
     background-color:#EFEFEF;
-    border-radius:4px;
+    /*border-radius:4px;*/
     border:1px solid #D0D0D0;
     overflow:auto;
 	       
+	}
+	#rainbow-new-game-dialog .difficulties label:hover {
+    background-color: #DFDFDF;	       
 	}
 
 	#rainbow-new-game-dialog .difficulties label span {
