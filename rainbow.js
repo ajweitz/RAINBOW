@@ -48,6 +48,7 @@ const PRIME = 31;
 function Game(name,prime,difficulty){
     this.carousel = name.split("");
     this.carousel.push(null); //one of the nodes should be empty
+    this.startingCarousel = this.carousel;
     this.carouselMapping = Array.apply(null, {length: this.carousel.length}).map(Number.call, Number); //generate [0,1,2,3,4,5,6,7] array (based on carousel length)
     this.prime = prime;
     this.key = "";
@@ -57,7 +58,7 @@ function Game(name,prime,difficulty){
 
 //Key must be a String
 Game.prototype.generate = function(decryptedKey){
-    if (arguments.length) {
+    if (arguments.length === 1) {
         //make sure the func arg is of String type.
         if (Object.prototype.toString.call(decryptedKey) !== "[object String]"){
             throw 'Error generate() paramater must be of type: "String"';
@@ -162,7 +163,11 @@ Game.prototype.playable = function(){
     // in case it's EASY
     return [left,right,doubleLeft,doubleRight,rightIndex(this.carousel,doubleRight),leftIndex(this.carousel,doubleLeft)];
 }
-
+Game.prototype.reset = function(){
+    this.carousel = this.startingCarousel;
+    this.generate(this.key);
+    this.movesCounter = 0;
+}
 
 /////////////////////
 ///////CANVAS////////
@@ -282,6 +287,12 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
     // this.canvasContext.fillRect(pos,pos,5,5);
 }
 Canvas.prototype.positionLetter = function(index){
+    var letterPadding = (CANVAS_LETTER_PADDING / 100) * this.size;
+    var x = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.cos((2*Math.PI)/16*((index+1)*2-1));
+    var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
+    return {"x":x,"y":y};
+}
+Canvas.prototype.positionResetButton = function(){
     var letterPadding = (CANVAS_LETTER_PADDING / 100) * this.size;
     var x = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.cos((2*Math.PI)/16*((index+1)*2-1));
     var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
