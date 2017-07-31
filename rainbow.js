@@ -10,36 +10,33 @@ const RESIZABLE = true;
 const CANVAS_BACKGROUND_COLOR="black";
 const CANVAS_PADDING = 0; //in Percent
 const CANVAS_FONT = "arial";
-const CANVAS_ANIMATION_SPEED = 500 //in milliseconds
+const CANVAS_ANIMATION_SPEED = 300 //in milliseconds
 const CANVAS_FRAME_RATE = 20;
 //Canvas - letter constants
-const CANVAS_LETTER_PADDING = 14; //in Percent
-const CANVAS_LETTER_RADIUS = 16;
-const CANVAS_LETTER_BACKGROUND_COLOR = "gold";
-const CANVAS_PLAYABLE_LETTER_RADIUS_RATION = 1.1;
-const CANVAS_SELECTED_LETTER_BACKGROUND_COLOR = "#bff99f";
-const CANVAS_PLAYABLE_LETTER_BACKGROUND_COLOR = "red";
-const CANVAS_LETTER_COLOR = "black";
+const CANVAS_LETTER_PADDING = 16; //in Percent
+const CANVAS_LETTER_RADIUS = 14;
+const CANVAS_LETTER_BACKGROUND_COLOR = "rgb(255, 162, 0)";
+const CANVAS_PLAYABLE_LETTER_RADIUS_RATIO = 1.05;
+const CANVAS_SELECTED_LETTER_BACKGROUND_COLOR = "gold";
+const CANVAS_PLAYABLE_LETTER_BACKGROUND_COLOR = "white";
+const CANVAS_LETTER_COLOR = "rgb(20,20,20)";
 //Canvas - key constants
-const CANVAS_KEY_FONT_RATIO = 30; //less is bigger
-const CANVAS_KEY_FONT_COLOR ="white";
+const CANVAS_KEY_FONT_RATIO = 25; //less is bigger
+const CANVAS_KEY_FONT_COLOR ="rgb(255, 162, 0)";
 //Canvas - moves constants
-const CANVAS_MOVES_FONT_COLOR = "red";
-const CANVAS_MOVES_FONT_RATIO = 20;
+const CANVAS_MOVES_FONT_COLOR = "rgb(255, 162, 0)";
+const CANVAS_MOVES_FONT_RATIO = 25
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
 const RAINBOW_LENGTH = 7;
-if(RAINBOW.length != RAINBOW_LENGTH){
-    throw 'Error RAINBOW not well defined';
-}
+if( RAINBOW.length != RAINBOW_LENGTH ){ throw 'Error RAINBOW not well defined'; };
 const DIFFICULTIES = ["LW","WW","MW","HW"];
 const VERY_EASY = 0;
 const EASY = 1;
 const MEDIUM =2;
 const HARD =3;
-const STARTING_DIFFICULTY = HARD;
-
+const STARTING_DIFFICULTY = EASY;
 const PRIME = 31;
 
 
@@ -263,7 +260,7 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
     if(playable){
         this.canvasContext.fillStyle = CANVAS_PLAYABLE_LETTER_BACKGROUND_COLOR;
         this.canvasContext.beginPath();
-        this.canvasContext.arc(xPosition, yPosition, letterRadius*CANVAS_PLAYABLE_LETTER_RADIUS_RATION, 0, Math.PI * 2);
+        this.canvasContext.arc(xPosition, yPosition, letterRadius*CANVAS_PLAYABLE_LETTER_RADIUS_RATIO, 0, Math.PI * 2);
         this.canvasContext.closePath();
         this.canvasContext.fill();
     }
@@ -422,6 +419,9 @@ window.onload = function() {
             for (var i = 0; i < playedMoves.length; i++) {    
                 canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
             }
+        }
+        if(game.isGameFinished()){
+            
         }
     },false);
     //Mouse Movement Listener
