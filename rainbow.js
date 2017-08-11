@@ -2,6 +2,7 @@
 
 //document constants
 const RAINBOW_GAME_FRAME = "rainbow-game";
+const RAINBOW_GAME_SHELL = "rainbow-game-shell"
 const RAINBOW_IMAGE = "rainbow-wheel-img";
 const RAINBOW_CANVAS = "rainbow-canvas";
 const RESIZABLE = true;
@@ -396,6 +397,10 @@ function convertBase(value, from_base, to_base) {
 window.onload = function() {
     var gameFrame = document.getElementById(RAINBOW_GAME_FRAME);
     // var canvasSize = Math.min( gameFrame.clientWidth,  gameFrame.clientHeight);
+    var outerShell = document.getElementById(RAINBOW_GAME_SHELL);
+    var newWidth = gameFrame.offsetWidth;
+    var newHeight = gameFrame.offsetWidth;
+    outerShell.style.cssText = "height: "+newHeight+"px; width: "+newWidth+"px; font-size: "+newHeight/50+"px;";
 
     var game = new Game(RAINBOW, PRIME, STARTING_DIFFICULTY);
     // game.generate("56701234");
@@ -404,7 +409,12 @@ window.onload = function() {
     var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME, game);
     canvas.resetSize();
     canvas.reDraw();
+
+    //on Resize
     window.onresize = function(event) {
+        newWidth = gameFrame.offsetWidth;
+        newHeight = gameFrame.offsetWidth;
+        outerShell.style.cssText = "height: "+newHeight+"px; width: "+newWidth+"px; font-size: "+newHeight/50+"px;";
         if(RESIZABLE){
             canvas.resetSize();
             canvas.reDraw();
