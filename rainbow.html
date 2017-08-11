@@ -3,6 +3,8 @@
 <head>
 	<title>RAINBOW</title>
 	<link rel="stylesheet" type="text/css" href="rainbow.css">
+	<link rel="stylesheet" 
+    href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<script type="text/javascript" src="rainbow.js"></script>
 </head>
 <body>
@@ -14,7 +16,9 @@
 	<div id="rainbow-game-shell">
 		<img id="rainbow-wheel-img" src="octagon.png" style="display: none;">
 		<canvas id="rainbow-canvas" ></canvas>
-		<div id="rainbow-new-game-dialog">
+
+		<!-- New game Dialog -->
+		<div id="rainbow-new-game-dialog" class="hidden">
 			<button type="button" class="close clickable" aria-label="Close">
 			  <span aria-hidden="true">&times;</span>
 			</button>
@@ -30,6 +34,7 @@
 		    <button class="new-game clickable">New Game</button>
 		   </form>
 		</div>
+
 	</div>
 </div>
 <!-- RAINBOW GAME -->

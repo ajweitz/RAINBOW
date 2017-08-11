@@ -5,6 +5,7 @@ const RAINBOW_GAME_FRAME = "rainbow-game";
 const RAINBOW_GAME_SHELL = "rainbow-game-shell"
 const RAINBOW_IMAGE = "rainbow-wheel-img";
 const RAINBOW_CANVAS = "rainbow-canvas";
+const RAINBOW_NEW_GAME_DIALOG ="rainbow-new-game-dialog";
 const RESIZABLE = true;
 
 //Canvas constants
@@ -26,7 +27,12 @@ const CANVAS_KEY_FONT_RATIO = 25; //less is bigger
 const CANVAS_KEY_FONT_COLOR ="rgb(255, 162, 0)";
 //Canvas - moves constants
 const CANVAS_MOVES_FONT_COLOR = "rgb(255, 162, 0)";
-const CANVAS_MOVES_FONT_RATIO = 25
+const CANVAS_MOVES_FONT_RATIO = 25;
+//Canvas - button constants
+const CANVAS_NEW_GAME_BUTTON_COLOR = "gold";
+const CANVAS_NEW_GAME_BUTTON_COLOR_HOVER = "rgb(255, 162, 0)";
+const CANVAS_NEW_GAME_BUTTON_LETTER_COLOR = "white";
+const CANVAS_NEW_GAME_BUTTON_RADIUS = 20;
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -55,6 +61,7 @@ function Game(name,prime,difficulty){
     this.key = "";
     this.movesCounter = 0;
     this.difficulty = difficulty;
+    this.paused = false;
 }
 
 //Key must be a String
@@ -210,6 +217,7 @@ Canvas.prototype.reDraw = function(){
 
     this.drawKey();
     this.drawMoves();
+    this.drawNewGameButton(CANVAS_NEW_GAME_BUTTON_COLOR);
     for (var i = 0; i < this.game.carousel.length; i++) {
         if(this.game.carousel[i] != null){
             if(this.movingLetters[this.game.carousel[i]] == null){
@@ -247,6 +255,37 @@ Canvas.prototype.drawLetterInCorner = function(letter, position,backgroundColor,
 
     var pos = this.positionLetter(position);
     this.drawLetter(letter,pos.x,pos.y,backgroundColor,playable);
+}
+Canvas.prototype.drawNewGameButton = function(color){
+    var position = this.positionNewGameButton();
+
+    var text = '\uf04b';
+    // var backgroundColor = CANVAS_LETTER_BACKGROUND_COLOR;
+    var textColor = CANVAS_NEW_GAME_BUTTON_LETTER_COLOR;
+    var letterRadius = this.size/CANVAS_NEW_GAME_BUTTON_RADIUS; 
+    var bold = true;
+
+    if(bold){
+        bold = "bold ";
+    }
+    else{
+        bold = "";
+    }
+
+    this.canvasContext.fillStyle = color;
+    this.canvasContext.beginPath();
+    this.canvasContext.arc(position.x, position.y, letterRadius, 0, Math.PI * 2);
+    this.canvasContext.closePath();
+    this.canvasContext.fill();
+    this.canvasContext.fillStyle = textColor; // font color to write the text with
+    var fontStyle = "FontAwesome";
+    var font = bold + letterRadius +"px " + fontStyle;
+    this.canvasContext.font = font;
+    // Move it down by half the text height and left by half the text width
+    var width = this.canvasContext.measureText(text).width;
+    var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
+    this.canvasContext.fillText(text, position.x - (width/2) ,position.y + (height/2));
+
 }
 Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundColor, playable){
     //Styling
@@ -286,6 +325,11 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
 
     // To show where the exact center is:
     // this.canvasContext.fillRect(pos,pos,5,5);
+}
+Canvas.prototype.positionNewGameButton = function(){
+    var position = this.size - (this.size)/CANVAS_NEW_GAME_BUTTON_RADIUS*1.2;
+    return {"x":position,"y":position};
+
 }
 Canvas.prototype.positionLetter = function(index){
     var letterPadding = (CANVAS_LETTER_PADDING / 100) * this.size;
@@ -423,39 +467,56 @@ window.onload = function() {
 
     //Click Listener
     canvas.canvasElement.addEventListener('click', function(event){
-        var mousePos = canvas.getMousePos(event);
-        var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
-        var playableLetters = game.playable();
-        var playedMoves = [];
+        if(!game.paused){
+            var mousePos = canvas.getMousePos(event);
+            var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
+            var newGameButtonRadius = canvas.size/CANVAS_NEW_GAME_BUTTON_RADIUS;
+            var playableLetters = game.playable();
+            var playedMoves = [];
 
-
-        for (var i = 0; i < playableLetters.length; i++) {
-            var letterCoordinates = canvas.positionLetter(playableLetters[i]);
-            if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
-                playedMoves = game.playMove( playableLetters[i] );
+            //new game button
+            if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= newGameButtonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= newGameButtonRadius ){
+                game.paused = true;
+                var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
+                newGameDialog.classList.remove("hidden");
             }
-        }
-
-        if(playedMoves.length > 0){
-            for (var i = 0; i < playedMoves.length; i++) {    
-                canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
+            for (var i = 0; i < playableLetters.length; i++) {
+                var letterCoordinates = canvas.positionLetter(playableLetters[i]);
+                if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
+                    playedMoves = game.playMove( playableLetters[i] );
+                }
             }
-        }
-        if(game.isGameFinished()){
-            
+
+            if(playedMoves.length > 0){
+                for (var i = 0; i < playedMoves.length; i++) {    
+                    canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
+                }
+            }
+            if(game.isGameFinished()){
+                
+            }
         }
     },false);
     //Mouse Movement Listener
     canvas.canvasElement.addEventListener('mousemove', function(event) {
-        if(!canvas.animationInAction){
-            var mousePos = canvas.getMousePos(event);
-            var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
-            var playableLetters = game.playable();
-            canvas.reDraw();
-            for (var i = 0; i < playableLetters.length; i++) {
-                var letterCoordinates = canvas.positionLetter(playableLetters[i]);
-                if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
-                    canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_SELECTED_LETTER_BACKGROUND_COLOR);
+        if(!game.paused){
+            if(!canvas.animationInAction){
+                var mousePos = canvas.getMousePos(event);
+                var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
+                var newGameButtonRadius = canvas.size/CANVAS_NEW_GAME_BUTTON_RADIUS;
+
+                var playableLetters = game.playable();
+                canvas.reDraw();
+                
+                //new game button
+                if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= newGameButtonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= newGameButtonRadius ){
+                    canvas.drawNewGameButton(CANVAS_NEW_GAME_BUTTON_COLOR_HOVER);
+                }
+                for (var i = 0; i < playableLetters.length; i++) {
+                    var letterCoordinates = canvas.positionLetter(playableLetters[i]);
+                    if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
+                        canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_SELECTED_LETTER_BACKGROUND_COLOR);
+                    }
                 }
             }
         }
