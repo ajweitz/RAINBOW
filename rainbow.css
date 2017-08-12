@@ -2,6 +2,10 @@
 	.hidden{
 		display: none;
 	}
+
+	.red-border{
+    border:2px solid red !important;
+	}
 	#rainbow-new-game-dialog .clickable{
     /*background-color:#EFEFEF;*/
     background-color:rgb(255,120,0);
@@ -60,7 +64,7 @@
 	#rainbow-new-game-dialog input.key-input:focus{
     outline: none;
 	}
-	#rainbow-new-game-dialog .new-game{
+	#rainbow-new-game-dialog .new-game-button{
 		position: absolute;
 		top: 70%;
 		left: 25%;

@@ -98,7 +98,7 @@ Game.prototype.decryptKey = function(key){
 };
 Game.prototype.isKeyValid = function(key){
     key = key.replace('#','');
-    if (!isNumeric(key))
+    if (!isAlphaNumeric(key))
         return false;
     var decryptedKey = this.decryptKey(key);
     if(this.encryptKey(decryptedKey) !== key || decryptedKey.length !== this.carouselMapping.length)
@@ -381,6 +381,19 @@ Canvas.prototype.getMousePos = function(event){
 function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
+function isAlphaNumeric(str){
+    var code, i, len;
+
+  for (i = 0, len = str.length; i < len; i++) {
+    code = str.charCodeAt(i);
+    if (!(code > 47 && code < 58) && // numeric (0-9)
+        // !(code > 64 && code < 91) && // upper alpha (A-Z)
+        !(code > 96 && code < 123)) { // lower alpha (a-z)
+      return false;
+    }
+  }
+  return true;
+}
 function rightIndex(array, i){
     var index = i+1;
     if(index == array.length){
@@ -464,6 +477,48 @@ window.onload = function() {
             canvas.reDraw();
         }
     };
+
+    //Dialog Close button listener
+    var closeButtons = document.getElementsByClassName("close");
+    for (var i = 0; i < closeButtons.length; i++) {
+        closeButtons[i].addEventListener("click", function(){
+            game.paused = false;
+            var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
+            newGameDialog.classList.add("hidden");
+        });
+    };
+
+    //New Game submit listener
+    var newGameForm = document.getElementById("new-game-form");
+    newGameForm.onsubmit = function(event){
+        event.preventDefault();
+        var keyField = document.getElementById("new-game-key-text");
+        var key = keyField.value;
+        var difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+
+        var isGameValid = false;
+        if(key === ""){
+            game = new Game(RAINBOW,PRIME,difficulty);
+            game.generate();
+            isGameValid = true;
+        }else if(game.isKeyValid(key)){
+            game = new Game(RAINBOW,PRIME,difficulty);
+            game.generate(game.decryptKey(key));
+            isGameValid = true;
+        }else{
+            keyField.classList.add("red-border");
+        };
+
+        if(isGameValid){
+            canvas.game = game;
+            var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
+            newGameDialog.classList.add("hidden");
+            keyField.classList.remove("red-border");
+            game.paused = false;
+            canvas.reDraw();
+
+        }
+    }
 
     //Click Listener
     canvas.canvasElement.addEventListener('click', function(event){

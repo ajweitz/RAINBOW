@@ -22,8 +22,8 @@
 			<button type="button" class="close clickable" aria-label="Close">
 			  <span aria-hidden="true">&times;</span>
 			</button>
-		  <form class="login-form">
-		    <input class="key-input clickable" type="text" placeholder="Enter a level key if you have one"/>
+		  <form id="new-game-form" action="javascript:void(0);">
+		    <input id="new-game-key-text" class="key-input clickable" type="text" placeholder="Enter a level key if you have one"/>
 		    <br>
 		    	<div class="difficulties">
 			      <label class="left-difficulty clickable"><input  type="radio" name="difficulty" value="0"> <span>LW</span></label>
@@ -31,7 +31,7 @@
 					  <label class="clickable"><input type="radio" name="difficulty" value="2"> <span>MW</span></label>
 					  <label class="right-difficulty clickable" ><input type="radio" name="difficulty" value="3"> <span>HW</span></label>
 					</div>
-		    <button class="new-game clickable">New Game</button>
+		    <button class="new-game-button clickable">New Game</button>
 		   </form>
 		</div>
 
