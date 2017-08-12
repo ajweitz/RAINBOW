@@ -1,11 +1,17 @@
 "use strict";
 
 //document constants
+const RAINBOW_CANVAS = "rainbow-canvas";
+const RAINBOW_IMAGE = "rainbow-wheel-img";
 const RAINBOW_GAME_FRAME = "rainbow-game";
 const RAINBOW_GAME_SHELL = "rainbow-game-shell"
-const RAINBOW_IMAGE = "rainbow-wheel-img";
-const RAINBOW_CANVAS = "rainbow-canvas";
-const RAINBOW_NEW_GAME_DIALOG ="rainbow-new-game-dialog";
+const RAINBOW_NEW_GAME_DIALOG = "rainbow-new-game-dialog";
+const RAINBOW_NEW_GAME_FORM ="new-game-form";
+const RAINBOW_NEW_GAME_TEXT_FIELD ="new-game-key-text";
+const RAINBOW_RADIO_NAME ="rainbow-difficulty";
+const RAINBOW_CLOSE = "rainbow-close";
+const RAINBOW_RED_BORDER = "red-border";
+const RAINBOW_HIDDEN = "hidden";
 const RESIZABLE = true;
 
 //Canvas constants
@@ -512,22 +518,22 @@ window.onload = function() {
     };
 
     //Dialog Close button listener
-    var closeButtons = document.getElementsByClassName("close");
+    var closeButtons = document.getElementsByClassName(RAINBOW_CLOSE);
     for (var i = 0; i < closeButtons.length; i++) {
         closeButtons[i].addEventListener("click", function(){
             game.paused = false;
             var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
-            newGameDialog.classList.add("hidden");
+            newGameDialog.classList.add(RAINBOW_HIDDEN);
         });
     };
 
     //New Game submit listener
-    var newGameForm = document.getElementById("new-game-form");
+    var newGameForm = document.getElementById(RAINBOW_NEW_GAME_FORM);
     newGameForm.onsubmit = function(event){
         event.preventDefault();
-        var keyField = document.getElementById("new-game-key-text");
+        var keyField = document.getElementById(RAINBOW_NEW_GAME_TEXT_FIELD);
         var key = keyField.value;
-        var difficulty = parseInt(document.querySelector('input[name="difficulty"]:checked').value);
+        var difficulty = parseInt(document.querySelector('input[name="'+RAINBOW_RADIO_NAME+'"]:checked').value);
 
         var isGameValid = false;
         if(key === ""){
@@ -539,14 +545,14 @@ window.onload = function() {
             game.generate(game.decryptKey(key));
             isGameValid = true;
         }else{
-            keyField.classList.add("red-border");
+            keyField.classList.add(RAINBOW_RED_BORDER);
         };
 
         if(isGameValid){
             canvas.game = game;
             var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
-            newGameDialog.classList.add("hidden");
-            keyField.classList.remove("red-border");
+            newGameDialog.classList.add(RAINBOW_HIDDEN);
+            keyField.classList.remove(RAINBOW_RED_BORDER);
             game.paused = false;
             canvas.reDraw();
 
@@ -566,7 +572,7 @@ window.onload = function() {
             if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= buttonRadius ){
                 game.paused = true;
                 var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
-                newGameDialog.classList.remove("hidden");
+                newGameDialog.classList.remove(RAINBOW_HIDDEN);
             }
             //Reset button
             if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){

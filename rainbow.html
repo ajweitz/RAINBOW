@@ -12,26 +12,26 @@
 
 
 <!-- RAINBOW GAME -->
-<div id="rainbow-game" style="height: 70%; width: 70%;">
+<div id="rainbow-game" style="height: 50%; width: 50%;">
 	<div id="rainbow-game-shell">
 		<img id="rainbow-wheel-img" src="octagon.png" style="display: none;">
 		<canvas id="rainbow-canvas" ></canvas>
 
 		<!-- New game Dialog -->
 		<div id="rainbow-new-game-dialog" class="hidden">
-			<button type="button" class="close clickable" aria-label="Close">
+			<button type="button" class="rainbow-close rainbow-clickable" aria-label="Close">
 			  <span aria-hidden="true">&times;</span>
 			</button>
 		  <form id="new-game-form" action="javascript:void(0);">
-		    <input id="new-game-key-text" class="key-input clickable" type="text" placeholder="Enter a level key if you have one"/>
+		    <input id="new-game-key-text" class="key-input rainbow-clickable" type="text" placeholder="Enter a level key if you have one"/>
 		    <br>
-		    	<div class="difficulties">
-			      <label class="left-difficulty clickable"><input  type="radio" name="difficulty" value="0"> <span>LW</span></label>
-					  <label class="clickable"><input type="radio" name="difficulty" value="1" checked> <span>WW</span></label>
-					  <label class="clickable"><input type="radio" name="difficulty" value="2"> <span>MW</span></label>
-					  <label class="right-difficulty clickable" ><input type="radio" name="difficulty" value="3"> <span>HW</span></label>
+		    	<div class="rainbow-difficulties">
+			      <label class="left-difficulty rainbow-clickable"><input  type="radio" name="rainbow-difficulty" value="0"> <span>LW</span></label>
+					  <label class="rainbow-clickable"><input type="radio" name="rainbow-difficulty" value="1" checked> <span>WW</span></label>
+					  <label class="rainbow-clickable"><input type="radio" name="rainbow-difficulty" value="2"> <span>MW</span></label>
+					  <label class="right-difficulty rainbow-clickable" ><input type="radio" name="rainbow-difficulty" value="3"> <span>HW</span></label>
 					</div>
-		    <button class="new-game-button clickable">New Game</button>
+		    <button class="rainbow-new-game-button rainbow-clickable">New Game</button>
 		   </form>
 		</div>
 
