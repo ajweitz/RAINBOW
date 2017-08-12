@@ -29,10 +29,10 @@ const CANVAS_KEY_FONT_COLOR ="rgb(255, 162, 0)";
 const CANVAS_MOVES_FONT_COLOR = "rgb(255, 162, 0)";
 const CANVAS_MOVES_FONT_RATIO = 25;
 //Canvas - button constants
-const CANVAS_NEW_GAME_BUTTON_COLOR = "gold";
-const CANVAS_NEW_GAME_BUTTON_COLOR_HOVER = "rgb(255, 162, 0)";
-const CANVAS_NEW_GAME_BUTTON_LETTER_COLOR = "white";
-const CANVAS_NEW_GAME_BUTTON_RADIUS = 20;
+const CANVAS_BUTTON_COLOR = "gold";
+const CANVAS_BUTTON_COLOR_HOVER = "rgb(255, 162, 0)";
+const CANVAS_BUTTON_LETTER_COLOR = "white";
+const CANVAS_BUTTON_RADIUS = 20;
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -217,7 +217,8 @@ Canvas.prototype.reDraw = function(){
 
     this.drawKey();
     this.drawMoves();
-    this.drawNewGameButton(CANVAS_NEW_GAME_BUTTON_COLOR);
+    this.drawNewGameButton(CANVAS_BUTTON_COLOR);
+    this.drawResetButton(CANVAS_BUTTON_COLOR);
     for (var i = 0; i < this.game.carousel.length; i++) {
         if(this.game.carousel[i] != null){
             if(this.movingLetters[this.game.carousel[i]] == null){
@@ -261,8 +262,39 @@ Canvas.prototype.drawNewGameButton = function(color){
 
     var text = '\uf04b';
     // var backgroundColor = CANVAS_LETTER_BACKGROUND_COLOR;
-    var textColor = CANVAS_NEW_GAME_BUTTON_LETTER_COLOR;
-    var letterRadius = this.size/CANVAS_NEW_GAME_BUTTON_RADIUS; 
+    var textColor = CANVAS_BUTTON_LETTER_COLOR;
+    var letterRadius = this.size/CANVAS_BUTTON_RADIUS; 
+    var bold = true;
+
+    if(bold){
+        bold = "bold ";
+    }
+    else{
+        bold = "";
+    }
+
+    this.canvasContext.fillStyle = color;
+    this.canvasContext.beginPath();
+    this.canvasContext.arc(position.x, position.y, letterRadius, 0, Math.PI * 2);
+    this.canvasContext.closePath();
+    this.canvasContext.fill();
+    this.canvasContext.fillStyle = textColor; // font color to write the text with
+    var fontStyle = "FontAwesome";
+    var font = bold + letterRadius +"px " + fontStyle;
+    this.canvasContext.font = font;
+    // Move it down by half the text height and left by half the text width
+    var width = this.canvasContext.measureText(text).width;
+    var height = this.canvasContext.measureText("w").width; // this is a GUESS of height
+    this.canvasContext.fillText(text, position.x - (width/2) ,position.y + (height/2));
+
+}
+Canvas.prototype.drawResetButton = function(color){
+    var position = this.positionResetButton();
+
+    var text = '\uf01e';
+    // var backgroundColor = CANVAS_LETTER_BACKGROUND_COLOR;
+    var textColor = CANVAS_BUTTON_LETTER_COLOR;
+    var letterRadius = this.size/CANVAS_BUTTON_RADIUS; 
     var bold = true;
 
     if(bold){
@@ -327,8 +359,14 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
     // this.canvasContext.fillRect(pos,pos,5,5);
 }
 Canvas.prototype.positionNewGameButton = function(){
-    var position = this.size - (this.size)/CANVAS_NEW_GAME_BUTTON_RADIUS*1.2;
+    var position = this.size - (this.size)/CANVAS_BUTTON_RADIUS*1.2;
     return {"x":position,"y":position};
+
+}
+Canvas.prototype.positionResetButton = function(){
+    var xPosition = this.size - (this.size)/CANVAS_BUTTON_RADIUS*1.4 - ((this.size)/CANVAS_BUTTON_RADIUS)*2;
+    var yPosition = this.size - (this.size)/CANVAS_BUTTON_RADIUS*1.2;
+    return {"x":xPosition,"y":yPosition};
 
 }
 Canvas.prototype.positionLetter = function(index){
@@ -337,12 +375,7 @@ Canvas.prototype.positionLetter = function(index){
     var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
     return {"x":x,"y":y};
 }
-Canvas.prototype.positionResetButton = function(){
-    var letterPadding = (CANVAS_LETTER_PADDING / 100) * this.size;
-    var x = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.cos((2*Math.PI)/16*((index+1)*2-1));
-    var y = this.size/2 + (this.size/2-this.padding-letterPadding) * Math.sin((2*Math.PI)/16*((index+1)*2-1));
-    return {"x":x,"y":y};
-}
+
 Canvas.prototype.animateLetterMovement = async function(letter, startPosition, endPosition, milliseconds){
 
     var frameRate = CANVAS_FRAME_RATE; //in milliseconds
@@ -525,16 +558,25 @@ window.onload = function() {
         if(!game.paused){
             var mousePos = canvas.getMousePos(event);
             var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
-            var newGameButtonRadius = canvas.size/CANVAS_NEW_GAME_BUTTON_RADIUS;
+            var buttonRadius = canvas.size/CANVAS_BUTTON_RADIUS;
             var playableLetters = game.playable();
             var playedMoves = [];
 
             //new game button
-            if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= newGameButtonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= newGameButtonRadius ){
+            if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= buttonRadius ){
                 game.paused = true;
                 var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
                 newGameDialog.classList.remove("hidden");
             }
+            //Reset button
+            if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){
+                var key = game.key;
+                game = new Game(RAINBOW, PRIME, game.difficulty);
+                game.generate(key);
+                canvas.game = game;
+                canvas.reDraw();
+            }
+
             for (var i = 0; i < playableLetters.length; i++) {
                 var letterCoordinates = canvas.positionLetter(playableLetters[i]);
                 if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
@@ -558,14 +600,18 @@ window.onload = function() {
             if(!canvas.animationInAction){
                 var mousePos = canvas.getMousePos(event);
                 var letterRadius = canvas.size/CANVAS_LETTER_RADIUS;
-                var newGameButtonRadius = canvas.size/CANVAS_NEW_GAME_BUTTON_RADIUS;
+                var buttonRadius = canvas.size/CANVAS_BUTTON_RADIUS;
 
                 var playableLetters = game.playable();
                 canvas.reDraw();
                 
                 //new game button
-                if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= newGameButtonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= newGameButtonRadius ){
-                    canvas.drawNewGameButton(CANVAS_NEW_GAME_BUTTON_COLOR_HOVER);
+                if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= buttonRadius ){
+                    canvas.drawNewGameButton(CANVAS_BUTTON_COLOR_HOVER);
+                }
+                //Reset button
+                if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){
+                    canvas.drawResetButton(CANVAS_BUTTON_COLOR_HOVER);
                 }
                 for (var i = 0; i < playableLetters.length; i++) {
                     var letterCoordinates = canvas.positionLetter(playableLetters[i]);
