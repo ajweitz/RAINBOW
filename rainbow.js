@@ -494,7 +494,7 @@ window.onload = function() {
         event.preventDefault();
         var keyField = document.getElementById("new-game-key-text");
         var key = keyField.value;
-        var difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+        var difficulty = parseInt(document.querySelector('input[name="difficulty"]:checked').value);
 
         var isGameValid = false;
         if(key === ""){
