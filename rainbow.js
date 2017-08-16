@@ -35,10 +35,10 @@ const CANVAS_KEY_FONT_COLOR ="rgb(255, 162, 0)";
 const CANVAS_MOVES_FONT_COLOR = "rgb(255, 162, 0)";
 const CANVAS_MOVES_FONT_RATIO = 25;
 //Canvas - button constants
-const CANVAS_BUTTON_COLOR = "gold";
-const CANVAS_BUTTON_COLOR_HOVER = "rgb(255, 162, 0)";
+const CANVAS_BUTTON_COLOR = "rgb(255, 162, 0)";
+const CANVAS_BUTTON_COLOR_HOVER = "gold";
 const CANVAS_BUTTON_LETTER_COLOR = "white";
-const CANVAS_BUTTON_RADIUS = 20;
+const CANVAS_BUTTON_RADIUS = 23;
 
 //game constants
 const RAINBOW = 'SHERDOG'; // Must be 7 letters
@@ -91,8 +91,8 @@ Game.prototype.generate = function(decryptedKey){
         }
         this.carousel = tempArray;
 };
-Game.prototype.encryptKey = function(){
-    return convertBase(((parseInt(this.key) * this.prime) + this.prime).toString(), 10, 32);;
+Game.prototype.encryptKey = function(key){
+    return convertBase(((parseInt(key) * this.prime) + this.prime).toString(), 10, 32);;
 };
 Game.prototype.decryptKey = function(key){
     var baseTenKey = convertBase(key, 32, 10);
@@ -107,8 +107,11 @@ Game.prototype.isKeyValid = function(key){
     if (!isAlphaNumeric(key))
         return false;
     var decryptedKey = this.decryptKey(key);
-    if(this.encryptKey(decryptedKey) !== key || decryptedKey.length !== this.carouselMapping.length)
+
+    if(this.encryptKey(decryptedKey) !== key || decryptedKey.length !== this.carouselMapping.length){
+        console.log("hah");
         return false;
+    }
     for (var i = 0; i < this.carouselMapping.length; i++) {
         var occurences = (decryptedKey.match(new RegExp(this.carouselMapping[i],"g")) || []).length; // check how many of the mapped chars are in the decrypted key.
         if(occurences != 1){
@@ -241,7 +244,7 @@ Canvas.prototype.reDraw = function(){
     }
 }
 Canvas.prototype.drawKey = function(){
-    var text = "#" + this.game.encryptKey();
+    var text = "#" + this.game.encryptKey(this.game.key);
     var fontSize = this.size/CANVAS_KEY_FONT_RATIO;
     var fontStyle = CANVAS_FONT;
     var font = "bold " + fontSize +"px "+fontStyle;
