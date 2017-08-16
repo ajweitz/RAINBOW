@@ -246,6 +246,8 @@ Canvas.prototype.reDraw = function(){
                 }
             }
         }
+    }else{
+        this.drawGameWon();
     }
 }
 Canvas.prototype.drawKey = function(){
