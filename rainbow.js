@@ -220,6 +220,7 @@ Canvas.prototype.resetSize = function(){
 
 }
 Canvas.prototype.reDraw = function(){
+
     this.canvasContext.fillStyle = CANVAS_BACKGROUND_COLOR;
     this.canvasContext.fillRect(0, 0, this.size, this.size);
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
@@ -227,18 +228,22 @@ Canvas.prototype.reDraw = function(){
     this.drawKey();
     this.drawMoves();
     this.drawNewGameButton(CANVAS_BUTTON_COLOR);
-    this.drawResetButton(CANVAS_BUTTON_COLOR);
-    for (var i = 0; i < this.game.carousel.length; i++) {
-        if(this.game.carousel[i] != null){
-            if(this.movingLetters[this.game.carousel[i]] == null){
-                var playable = false;
-                if(this.game.playable().includes(i)){
-                    playable = true;
+    if(!this.game.isGameFinished()){
+        this.drawResetButton(CANVAS_BUTTON_COLOR);
+    }
+    if(!this.game.isGameFinished() || this.animationInAction){
+        for (var i = 0; i < this.game.carousel.length; i++) {
+            if(this.game.carousel[i] != null){
+                if(this.movingLetters[this.game.carousel[i]] == null){
+                    var playable = false;
+                    if(this.game.playable().includes(i)){
+                        playable = true;
+                    }
+                    this.drawLetterInCorner(this.game.carousel[i],i,CANVAS_LETTER_BACKGROUND_COLOR,playable);
+                }else{
+                    var position = this.movingLetters[this.game.carousel[i]];
+                    this.drawLetter(this.game.carousel[i],position.x,position.y,CANVAS_LETTER_BACKGROUND_COLOR,false);
                 }
-                this.drawLetterInCorner(this.game.carousel[i],i,CANVAS_LETTER_BACKGROUND_COLOR,playable);
-            }else{
-                var position = this.movingLetters[this.game.carousel[i]];
-                this.drawLetter(this.game.carousel[i],position.x,position.y,CANVAS_LETTER_BACKGROUND_COLOR,false);
             }
         }
     }
@@ -366,6 +371,9 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
 
     // To show where the exact center is:
     // this.canvasContext.fillRect(pos,pos,5,5);
+}
+Canvas.prototype.drawGameWon = function(){
+
 }
 Canvas.prototype.positionNewGameButton = function(){
     var position = this.size - (this.size)/CANVAS_BUTTON_RADIUS*1.2;
@@ -499,6 +507,7 @@ window.onload = function() {
     var outerShell = document.getElementById(RAINBOW_GAME_SHELL);
     var newWidth = gameFrame.offsetWidth;
     var newHeight = gameFrame.offsetWidth;
+    var gameFinished = false;
     outerShell.style.cssText = "height: "+newHeight+"px; width: "+newWidth+"px; font-size: "+newHeight/50+"px;";
 
     var game = new Game(RAINBOW, PRIME, STARTING_DIFFICULTY);
@@ -552,6 +561,7 @@ window.onload = function() {
         };
 
         if(isGameValid){
+            gameFinished = false;
             canvas.game = game;
             var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
             newGameDialog.classList.add(RAINBOW_HIDDEN);
@@ -570,6 +580,7 @@ window.onload = function() {
             var buttonRadius = canvas.size/CANVAS_BUTTON_RADIUS;
             var playableLetters = game.playable();
             var playedMoves = [];
+            
 
             //new game button
             if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= buttonRadius ){
@@ -577,29 +588,32 @@ window.onload = function() {
                 var newGameDialog = document.getElementById(RAINBOW_NEW_GAME_DIALOG);
                 newGameDialog.classList.remove(RAINBOW_HIDDEN);
             }
-            //Reset button
-            if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){
-                var key = game.key;
-                game = new Game(RAINBOW, PRIME, game.difficulty);
-                game.generate(key);
-                canvas.game = game;
-                canvas.reDraw();
-            }
-
-            for (var i = 0; i < playableLetters.length; i++) {
-                var letterCoordinates = canvas.positionLetter(playableLetters[i]);
-                if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
-                    playedMoves = game.playMove( playableLetters[i] );
+            if(!gameFinished){
+                //Reset button
+                if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){
+                    gameFinished = false;
+                    var key = game.key;
+                    game = new Game(RAINBOW, PRIME, game.difficulty);
+                    game.generate(key);
+                    canvas.game = game;
+                    canvas.reDraw();
                 }
-            }
 
-            if(playedMoves.length > 0){
-                for (var i = 0; i < playedMoves.length; i++) {    
-                    canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
+                for (var i = 0; i < playableLetters.length; i++) {
+                    var letterCoordinates = canvas.positionLetter(playableLetters[i]);
+                    if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
+                        playedMoves = game.playMove( playableLetters[i] );
+                    }
                 }
-            }
-            if(game.isGameFinished()){
-                
+
+                if(playedMoves.length > 0){
+                    for (var i = 0; i < playedMoves.length; i++) {    
+                        canvas.animateLetterMovement(playedMoves[i].value,playedMoves[i].from, playedMoves[i].to, CANVAS_ANIMATION_SPEED);
+                    }
+                }
+                if(game.isGameFinished()){
+                    gameFinished = true;
+                }
             }
         }
     },false);
@@ -618,14 +632,16 @@ window.onload = function() {
                 if(Math.abs(canvas.positionNewGameButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionNewGameButton().y - mousePos.y) <= buttonRadius ){
                     canvas.drawNewGameButton(CANVAS_BUTTON_COLOR_HOVER);
                 }
-                //Reset button
-                if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){
-                    canvas.drawResetButton(CANVAS_BUTTON_COLOR_HOVER);
-                }
-                for (var i = 0; i < playableLetters.length; i++) {
-                    var letterCoordinates = canvas.positionLetter(playableLetters[i]);
-                    if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
-                        canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_SELECTED_LETTER_BACKGROUND_COLOR);
+                if(!gameFinished){
+                    //Reset button
+                    if(Math.abs(canvas.positionResetButton().x - mousePos.x) <= buttonRadius && Math.abs(canvas.positionResetButton().y - mousePos.y) <= buttonRadius ){
+                        canvas.drawResetButton(CANVAS_BUTTON_COLOR_HOVER);
+                    }
+                    for (var i = 0; i < playableLetters.length; i++) {
+                        var letterCoordinates = canvas.positionLetter(playableLetters[i]);
+                        if(Math.abs(letterCoordinates.x - mousePos.x) <= letterRadius && Math.abs(letterCoordinates.y - mousePos.y) <= letterRadius ){
+                            canvas.drawLetterInCorner(game.carousel[playableLetters[i]],playableLetters[i],CANVAS_SELECTED_LETTER_BACKGROUND_COLOR);
+                        }
                     }
                 }
             }
