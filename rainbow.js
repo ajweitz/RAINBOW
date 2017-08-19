@@ -3,6 +3,7 @@
 //document constants
 const RAINBOW_CANVAS = "rainbow-canvas";
 const RAINBOW_IMAGE = "rainbow-wheel-img";
+const RAINBOW_DIFFICULTIES_IMAGES = ["rainbow-LW-img", "rainbow-WW-img", "rainbow-MW-img", "rainbow-HW-img"];
 const RAINBOW_GAME_FRAME = "rainbow-game";
 const RAINBOW_GAME_SHELL = "rainbow-game-shell"
 const RAINBOW_NEW_GAME_DIALOG = "rainbow-new-game-dialog";
@@ -221,17 +222,20 @@ Canvas.prototype.resetSize = function(){
 }
 Canvas.prototype.reDraw = function(){
 
+    var gameFinished = this.game.isGameFinished() && !this.animationInAction;
     this.canvasContext.fillStyle = CANVAS_BACKGROUND_COLOR;
     this.canvasContext.fillRect(0, 0, this.size, this.size);
     this.canvasContext.drawImage(this.image, this.padding, this.padding, this.size-this.padding*2, this.size-this.padding*2);
 
+    if(!gameFinished){
+        this.drawResetButton(CANVAS_BUTTON_COLOR);
+    }else{
+        this.drawGameWon();
+    }
     this.drawKey();
     this.drawMoves();
     this.drawNewGameButton(CANVAS_BUTTON_COLOR);
-    if(!this.game.isGameFinished()){
-        this.drawResetButton(CANVAS_BUTTON_COLOR);
-    }
-    if(!this.game.isGameFinished() || this.animationInAction){
+    if(!gameFinished){
         for (var i = 0; i < this.game.carousel.length; i++) {
             if(this.game.carousel[i] != null){
                 if(this.movingLetters[this.game.carousel[i]] == null){
@@ -246,8 +250,6 @@ Canvas.prototype.reDraw = function(){
                 }
             }
         }
-    }else{
-        this.drawGameWon();
     }
 }
 Canvas.prototype.drawKey = function(){
@@ -375,6 +377,10 @@ Canvas.prototype.drawLetter = function(letter, xPosition, yPosition, backgroundC
     // this.canvasContext.fillRect(pos,pos,5,5);
 }
 Canvas.prototype.drawGameWon = function(){
+    var image = document.getElementById(RAINBOW_DIFFICULTIES_IMAGES[this.game.difficulty]);
+    var size = (this.size)/2;
+    this.canvasContext.drawImage(image, 0, 0, this.size, this.size);
+    // this.canvasContext.drawImage(image, this.size/4, this.size/4, size , size* image.height /image.width);
 
 }
 Canvas.prototype.positionNewGameButton = function(){
@@ -513,7 +519,7 @@ window.onload = function() {
     outerShell.style.cssText = "height: "+newHeight+"px; width: "+newWidth+"px; font-size: "+newHeight/50+"px;";
 
     var game = new Game(RAINBOW, PRIME, STARTING_DIFFICULTY);
-    // game.generate("56701234");
+    // game.generate("0123456");
     game.generate();
 
     var canvas = new Canvas(RAINBOW_CANVAS, CANVAS_PADDING, RAINBOW_IMAGE, RAINBOW_GAME_FRAME, game);
